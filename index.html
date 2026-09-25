@@ -65,9 +65,12 @@
     .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
     .message.success { background: #064e3b; color: #34d399; display: block; }
+    .message.info { background: #1e1b4b; color: #a5b4fc; display: block; }
     
     .btn-logout { background: #7f1d1d; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
     .btn-restart { background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; width: 100%; }
+
+    .review-banner { background: #312e81; color: #c7d2fe; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 10px; border: 1px solid #4338ca; }
 
     .hidden { display: none !important; }
   </style>
@@ -80,9 +83,7 @@
   <div id="auth-section" class="main-container">
     <div class="leaderboard-card">
       <div class="leaderboard-title">🏆 Top Scores</div>
-      <div id="leaderboard-list" class="score-list">
-        <!-- JS ile Dolacak -->
-      </div>
+      <div id="leaderboard-list" class="score-list"></div>
     </div>
 
     <div class="auth-card">
@@ -143,6 +144,11 @@
       <div class="stat-box"><span class="stat-label">Score</span><span id="current-score" style="color: #38bdf8;">0</span></div>
     </div>
 
+    <!-- Mod Bilgilendirme Bandı -->
+    <div id="review-banner" class="review-banner hidden">
+      💡 REDEMPTION ROUND: Answer words you got wrong for +5 Pts each!
+    </div>
+
     <div id="game-play-area">
       <div class="word-box">
         <p style="color: #64748b; font-size: 12px; margin-bottom: 5px;">Choose the correct synonym or translation:</p>
@@ -170,8 +176,13 @@
     let timerInterval = null;
     let currentQuestion = null;
     let canAnswer = true;
+    
+    let playedWords = [];
+    
+    // YENİ: Yanlış bilinen kelimeler ve mod kontrolü
+    let wrongWordsHistory = [];
+    let isReviewMode = false;
 
-    // ORTAOKUL & LİSE MÜFREDATINA UYGUN DENGELİ KELİME LİSTESİ
     const wordDatabase = {
       A1: [
         { word: "Start", correct: "Begin", wrong: ["End", "Finish", "Stop"] },
@@ -408,7 +419,11 @@
       lives = 3;
       timeLeft = 60;
       canAnswer = true;
+      playedWords = [];
+      wrongWordsHistory = [];
+      isReviewMode = false;
       
+      document.getElementById('review-banner').classList.add('hidden');
       document.getElementById('game-play-area').classList.remove('hidden');
       document.getElementById('game-over-area').classList.add('hidden');
       document.getElementById('current-score').innerText = currentScore;
@@ -425,7 +440,8 @@
         timeLeft--;
         document.getElementById('timer-display').innerText = timeLeft + "s";
         if(timeLeft <= 0) {
-          gameOver("Time is up!");
+          clearInterval(timerInterval);
+          startReviewMode();
         }
       }, 1000);
     }
@@ -433,10 +449,26 @@
     function nextQuestion() {
       canAnswer = true;
       document.getElementById('game-msg').className = "message";
-      
-      const pool = wordDatabase[currentLevel] || wordDatabase['A1'];
-      const index = Math.floor(Math.random() * pool.length);
-      currentQuestion = pool[index];
+
+      if(isReviewMode) {
+        if(wrongWordsHistory.length === 0) {
+          finishGame();
+          return;
+        }
+        currentQuestion = wrongWordsHistory.shift();
+      } else {
+        const pool = wordDatabase[currentLevel] || wordDatabase['A1'];
+        let availableWords = pool.filter(item => !playedWords.includes(item.word));
+
+        if (availableWords.length === 0) {
+          playedWords = [];
+          availableWords = [...pool];
+        }
+
+        const index = Math.floor(Math.random() * availableWords.length);
+        currentQuestion = availableWords[index];
+        playedWords.push(currentQuestion.word);
+      }
 
       document.getElementById('target-word').innerText = currentQuestion.word;
       let options = [...currentQuestion.wrong, currentQuestion.correct].sort(() => Math.random() - 0.5);
@@ -460,17 +492,16 @@
       const allButtons = document.querySelectorAll('.option-btn');
 
       if(selected === currentQuestion.correct) {
-        currentScore += 10;
+        // Normal modda 10 puan, Yanlışları Tekrar modunda 5 puan ver
+        const pointsAwarded = isReviewMode ? 5 : 10;
+        currentScore += pointsAwarded;
         document.getElementById('current-score').innerText = currentScore;
         targetBtn.classList.add('correct-highlight');
         
-        msg.innerText = "Correct! 🎉 (+10 Pts)";
+        msg.innerText = `Correct! 🎉 (+${pointsAwarded} Pts)`;
         msg.className = "message success";
         setTimeout(nextQuestion, 800);
       } else {
-        lives--;
-        document.getElementById('lives-display').innerText = "❤️".repeat(Math.max(0, lives));
-        
         targetBtn.classList.add('wrong-highlight');
         allButtons.forEach(btn => {
           if(btn.innerText === currentQuestion.correct) {
@@ -478,19 +509,48 @@
           }
         });
 
-        msg.innerText = `Wrong! Correct answer was "${currentQuestion.correct}" ❌`;
-        msg.className = "message error";
-        
-        if(lives <= 0) {
-          setTimeout(() => gameOver("Out of lives!"), 1400);
+        if(!isReviewMode) {
+          lives--;
+          document.getElementById('lives-display').innerText = "❤️".repeat(Math.max(0, lives));
+          
+          // Yanlış bilinen kelimeyi geçmişe ekle (tekrar sorulacak)
+          if(!wrongWordsHistory.some(w => w.word === currentQuestion.word)) {
+            wrongWordsHistory.push(currentQuestion);
+          }
+
+          msg.innerText = `Wrong! Correct answer was "${currentQuestion.correct}" ❌`;
+          msg.className = "message error";
+          
+          if(lives <= 0) {
+            clearInterval(timerInterval);
+            setTimeout(startReviewMode, 1200);
+          } else {
+            setTimeout(nextQuestion, 1200);
+          }
         } else {
-          setTimeout(nextQuestion, 1400);
+          // Review Modunda yanlış yaparsa ek puan alamaz ve sıradakine geçilir
+          msg.innerText = `Wrong again! Correct was "${currentQuestion.correct}"`;
+          msg.className = "message error";
+          setTimeout(nextQuestion, 1200);
         }
       }
     }
 
-    function gameOver(reason) {
+    function startReviewMode() {
+      if(wrongWordsHistory.length === 0) {
+        finishGame();
+        return;
+      }
+      
+      isReviewMode = true;
+      document.getElementById('review-banner').classList.remove('hidden');
+      document.getElementById('timer-display').innerText = "OFF";
+      nextQuestion();
+    }
+
+    function finishGame() {
       clearInterval(timerInterval);
+      document.getElementById('review-banner').classList.add('hidden');
       document.getElementById('game-play-area').classList.add('hidden');
       document.getElementById('game-over-area').classList.remove('hidden');
       document.getElementById('final-score').innerText = currentScore;
