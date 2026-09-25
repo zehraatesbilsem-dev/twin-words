@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twin Words - Login</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #0b0f19; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    
+    .title { font-size: 32px; font-weight: 800; color: #3b82f6; margin-bottom: 30px; letter-spacing: 2px; }
+    
+    .main-container { display: flex; gap: 20px; width: 100%; max-width: 900px; flex-wrap: wrap; }
+    
+    /* Sol Panel (Skorlar) */
+    .leaderboard-card { background: #151d2a; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; flex: 1; min-width: 280px; height: fit-content; }
+    .leaderboard-title { font-size: 16px; font-weight: bold; color: #f59e0b; display: flex; align-items: center; gap: 8px; margin-bottom: 15px; }
+    .score-item { background: #222d3d; border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #2d3b4e; }
+    .player-info { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 15px; }
+    .badge { background: #3b82f6; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    .points { color: #818cf8; font-weight: bold; font-size: 15px; }
+    
+    /* Sağ Panel (Giriş / Kayıt Formu) */
+    .auth-card { background: #151d2a; border: 1px solid #1e293b; border-radius: 16px; padding: 35px 30px; flex: 1.3; min-width: 280px; display: flex; flex-direction: column; align-items: center; }
+    
+    .tabs { display: flex; width: 100%; margin-bottom: 25px; border-bottom: 2px solid #1e293b; }
+    .tab-btn { flex: 1; padding: 10px; background: none; border: none; outline: none; cursor: pointer; font-size: 16px; font-weight: bold; color: #64748b; transition: 0.2s; }
+    .tab-btn.active { color: #3b82f6; border-bottom: 2px solid #3b82f6; }
+    
+    .form-box { width: 100%; display: flex; flex-direction: column; gap: 15px; }
+    .input-field { width: 100%; padding: 12px 16px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; color: white; font-size: 14px; outline: none; }
+    .input-field:focus { border-color: #3b82f6; }
+    
+    .btn-submit { width: 100%; padding: 12px; background: #3730a3; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px; }
+    .btn-submit:hover { background: #4338ca; }
+    
+    /* Profil Seçimi (Mobil Uyumlu Avatar) */
+    .avatar-title { font-size: 11px; font-weight: bold; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; text-align: center; }
+    .avatar-list { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+    .avatar-item { font-size: 24px; padding: 8px 12px; border-radius: 8px; background: #0f172a; border: 1px solid #1e293b; cursor: pointer; transition: 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .avatar-item.selected { border-color: #3b82f6; background: #1e1b4b; }
+    
+    .message { font-size: 13px; text-align: center; margin-top: 10px; padding: 8px; border-radius: 6px; display: none; width: 100%; }
+    .message.error { background: #451a1a; color: #f87171; display: block; }
+    .message.success { background: #064e3b; color: #34d399; display: block; }
+    
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="title">TWIN WORDS</div>
+
+  <div class="main-container">
+    <!-- Sol Skor Paneli -->
+    <div class="leaderboard-card">
+      <div class="leaderboard-title">🏆 Top 10 Scores</div>
+      <div class="score-item">
+        <div class="player-info">
+          <span>#1</span>
+          <span>🦊 zehra</span>
+        </div>
+        <div>
+          <span class="badge">A2</span>
+          <span class="points">180 Pts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sağ Giriş/Kayıt Paneli -->
+    <div class="auth-card">
+      <div id="tab-container" class="tabs">
+        <button id="btn-login-tab" class="tab-btn active" onclick="sekmeDegistir('login')">Giriş Yap</button>
+        <button id="btn-reg-tab" class="tab-btn" onclick="sekmeDegistir('register')">Kayıt Ol</button>
+      </div>
+
+      <!-- GİRİŞ FORMU -->
+      <div id="login-form" class="form-box">
+        <input type="text" id="login-username" class="input-field" placeholder="Kullanıcı Adı">
+        <input type="password" id="login-password" class="input-field" placeholder="Şifre">
+        <button class="btn-submit" onclick="girisYap()">Oyuna Başla</button>
+      </div>
+
+      <!-- KAYIT FORMU -->
+      <div id="register-form" class="form-box hidden">
+        <div class="avatar-title">Avatar Seçin</div>
+        <div class="avatar-list">
+          <span class="avatar-item selected" onclick="avatarSec(this, '🦊')" ontouchstart="avatarSec(this, '🦊')">🦊</span>
+          <span class="avatar-item" onclick="avatarSec(this, '🐱')" ontouchstart="avatarSec(this, '🐱')">🐱</span>
+          <span class="avatar-item" onclick="avatarSec(this, '🐼')" ontouchstart="avatarSec(this, '🐼')">🐼</span>
+          <span class="avatar-item" onclick="avatarSec(this, '🦁')" ontouchstart="avatarSec(this, '🦁')">🦁</span>
+          <span class="avatar-item" onclick="avatarSec(this, '🐸')" ontouchstart="avatarSec(this, '🐸')">🐸</span>
+        </div>
+        <input type="text" id="reg-username" class="input-field" placeholder="Kullanıcı Adı">
+        <input type="password" id="reg-password" class="input-field" placeholder="Şifre">
+        <button class="btn-submit" onclick="kayitol()">Hesap Oluştur</button>
+      </div>
+
+      <!-- OYUNCU ONAY/DASHBOARD EKRANI -->
+      <div id="dashboard-form" class="form-box hidden" style="text-align: center;">
+        <h3 id="welcome-text" style="margin-bottom: 10px;">Hoş Geldin!</h3>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Oturumun açık.</p>
+        <button class="btn-submit" onclick="cikisYap()" style="background: #991b1b;">Çıkış Yap</button>
+      </div>
+
+      <div id="msg" class="message"></div>
+    </div>
+  </div>
+
+  <script>
+    let secilenAvatar = '🦊';
+
+    window.onload = function() {
+      const aktif = JSON.parse(localStorage.getItem('aktifKullanici'));
+      if (aktif) {
+        oturumAç(aktif.kullaniciAdi);
+      }
+    };
+
+    function avatarSec(el, avatar) {
+      document.querySelectorAll('.avatar-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+      secilenAvatar = avatar;
+    }
+
+    function sekmeDegistir(hedef) {
+      mesajTemizle();
+      if(hedef === 'login') {
+        document.getElementById('login-form').classList.remove('hidden');
+        document.getElementById('register-form').classList.add('hidden');
+        document.getElementById('btn-login-tab').classList.add('active');
+        document.getElementById('btn-reg-tab').classList.remove('active');
+      } else {
+        document.getElementById('register-form').classList.remove('hidden');
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('btn-reg-tab').classList.add('active');
+        document.getElementById('btn-login-tab').classList.remove('active');
+      }
+    }
+
+    function kayitol() {
+      const username = document.getElementById('reg-username').value.trim();
+      const password = document.getElementById('reg-password').value.trim();
+
+      if(!username || !password) {
+        mesajGoster("Lütfen tüm alanları doldurun!", "error");
+        return;
+      }
+
+      const kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+      if(kullanicilar.some(u => u.kullaniciAdi === username)) {
+        mesajGoster("Bu kullanıcı adı zaten alınmış!", "error");
+        return;
+      }
+
+      kullanicilar.push({ kullaniciAdi: username, sifre: password, avatar: secilenAvatar });
+      localStorage.setItem('kullanicilar', JSON.stringify(kullanicilar));
+
+      mesajGoster("Kayıt başarılı! Giriş sekmesine geçiliyor...", "success");
+      setTimeout(() => sekmeDegistir('login'), 1000);
+    }
+
+    function girisYap() {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+
+      const kullanicilar = JSON.parse(localStorage.getItem('kullanicilar')) || [];
+      const kullanici = kullanicilar.find(u => u.kullaniciAdi === username && u.sifre === password);
+
+      if(kullanici) {
+        localStorage.setItem('aktifKullanici', JSON.stringify(kullanici));
+        oturumAç(kullanici.kullaniciAdi);
+      } else {
+        mesajGoster("Kullanıcı adı veya şifre hatalı!", "error");
+      }
+    }
+
+    function oturumAç(kullaniciAdi) {
+      document.getElementById('tab-container').classList.add('hidden');
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('register-form').classList.add('hidden');
+      document.getElementById('dashboard-form').classList.remove('hidden');
+      document.getElementById('welcome-text').innerText = "Hoş Geldin, " + kullaniciAdi;
+      mesajTemizle();
+    }
+
+    function cikisYap() {
+      localStorage.removeItem('aktifKullanici');
+      document.getElementById('dashboard-form').classList.add('hidden');
+      document.getElementById('tab-container').classList.remove('hidden');
+      sekmeDegistir('login');
+      mesajGoster("Çıkış yapıldı.", "success");
+    }
+
+    function mesajGoster(metin, tip) {
+      const msg = document.getElementById('msg');
+      msg.innerText = metin;
+      msg.className = "message " + tip;
+    }
+
+    function mesajTemizle() {
+      const msg = document.getElementById('msg');
+      msg.className = "message";
+      msg.innerText = "";
+    }
+  </script>
+</body>
+</html>
