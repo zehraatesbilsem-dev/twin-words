@@ -57,7 +57,14 @@
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .option-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
     .option-btn:hover:not(:disabled) { background: #334155; border-color: #3b82f6; }
+    .option-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #1e293b; }
     
+    /* Jokers Container */
+    .jokers-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 5px; }
+    .joker-btn { background: #1e1b4b; border: 1px solid #4338ca; color: #a5b4fc; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .joker-btn:hover:not(:disabled) { background: #312e81; color: white; }
+    .joker-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #1e293b; color: #64748b; }
+
     /* Doğru/Yanlış Efekt Renkleri */
     .option-btn.correct-highlight { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; font-weight: bold; }
     .option-btn.wrong-highlight { background: #7f1d1d !important; border-color: #ef4444 !important; color: #f87171 !important; }
@@ -70,7 +77,14 @@
     .btn-logout { background: #7f1d1d; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
     .btn-restart { background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; width: 100%; }
 
-    .review-banner { background: #312e81; color: #c7d2fe; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; margin-bottom: 10px; border: 1px solid #4338ca; }
+    .review-banner { background: #312e81; color: #c7d2fe; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; border: 1px solid #4338ca; }
+    .combo-banner { color: #f59e0b; font-weight: 800; font-size: 18px; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); animation: pulse 0.5s ease-in-out; }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
 
     .hidden { display: none !important; }
   </style>
@@ -144,9 +158,19 @@
       <div class="stat-box"><span class="stat-label">Score</span><span id="current-score" style="color: #38bdf8;">0</span></div>
     </div>
 
-    <!-- Mod Bilgilendirme Bandı -->
+    <!-- Jokers Bar -->
+    <div class="jokers-container">
+      <button id="joker-5050" class="joker-btn" onclick="useFiftyFifty()">🎭 50/50 Joker</button>
+      <button id="joker-time" class="joker-btn" onclick="useExtraTime()">⏳ +10s Time</button>
+    </div>
+
+    <!-- Bildirim Bandları -->
     <div id="review-banner" class="review-banner hidden">
       💡 REDEMPTION ROUND: Answer words you got wrong for +5 Pts each!
+    </div>
+
+    <div id="combo-banner" class="combo-banner hidden">
+      🔥 3 COMBO! (1.5x Puan)
     </div>
 
     <div id="game-play-area">
@@ -178,10 +202,13 @@
     let canAnswer = true;
     
     let playedWords = [];
-    
-    // YENİ: Yanlış bilinen kelimeler ve mod kontrolü
     let wrongWordsHistory = [];
     let isReviewMode = false;
+    let comboCount = 0;
+
+    // Joker Durumları
+    let fiftyFiftyUsed = false;
+    let extraTimeUsed = false;
 
     const wordDatabase = {
       A1: [
@@ -422,8 +449,16 @@
       playedWords = [];
       wrongWordsHistory = [];
       isReviewMode = false;
+      comboCount = 0;
+      
+      // Jokerleri Sıfırla
+      fiftyFiftyUsed = false;
+      extraTimeUsed = false;
+      document.getElementById('joker-5050').disabled = false;
+      document.getElementById('joker-time').disabled = false;
       
       document.getElementById('review-banner').classList.add('hidden');
+      document.getElementById('combo-banner').classList.add('hidden');
       document.getElementById('game-play-area').classList.remove('hidden');
       document.getElementById('game-over-area').classList.add('hidden');
       document.getElementById('current-score').innerText = currentScore;
@@ -492,16 +527,37 @@
       const allButtons = document.querySelectorAll('.option-btn');
 
       if(selected === currentQuestion.correct) {
-        // Normal modda 10 puan, Yanlışları Tekrar modunda 5 puan ver
-        const pointsAwarded = isReviewMode ? 5 : 10;
+        comboCount++;
+
+        let multiplier = 1;
+        if (comboCount >= 5) {
+          multiplier = 2;
+        } else if (comboCount >= 3) {
+          multiplier = 1.5;
+        }
+
+        const basePoints = isReviewMode ? 5 : 10;
+        const pointsAwarded = Math.round(basePoints * multiplier);
+
         currentScore += pointsAwarded;
         document.getElementById('current-score').innerText = currentScore;
         targetBtn.classList.add('correct-highlight');
+
+        const comboBanner = document.getElementById('combo-banner');
+        if (comboCount >= 3) {
+          comboBanner.innerText = `🔥 ${comboCount} COMBO! (${multiplier}x Puan)`;
+          comboBanner.classList.remove('hidden');
+        } else {
+          comboBanner.classList.add('hidden');
+        }
         
         msg.innerText = `Correct! 🎉 (+${pointsAwarded} Pts)`;
         msg.className = "message success";
         setTimeout(nextQuestion, 800);
       } else {
+        comboCount = 0;
+        document.getElementById('combo-banner').classList.add('hidden');
+
         targetBtn.classList.add('wrong-highlight');
         allButtons.forEach(btn => {
           if(btn.innerText === currentQuestion.correct) {
@@ -513,7 +569,6 @@
           lives--;
           document.getElementById('lives-display').innerText = "❤️".repeat(Math.max(0, lives));
           
-          // Yanlış bilinen kelimeyi geçmişe ekle (tekrar sorulacak)
           if(!wrongWordsHistory.some(w => w.word === currentQuestion.word)) {
             wrongWordsHistory.push(currentQuestion);
           }
@@ -528,12 +583,38 @@
             setTimeout(nextQuestion, 1200);
           }
         } else {
-          // Review Modunda yanlış yaparsa ek puan alamaz ve sıradakine geçilir
           msg.innerText = `Wrong again! Correct was "${currentQuestion.correct}"`;
           msg.className = "message error";
           setTimeout(nextQuestion, 1200);
         }
       }
+    }
+
+    /* JOKER FONKSİYONLARI */
+    function useFiftyFifty() {
+      if(fiftyFiftyUsed || !canAnswer) return;
+      fiftyFiftyUsed = true;
+      document.getElementById('joker-5050').disabled = true;
+
+      const buttons = Array.from(document.querySelectorAll('.option-btn'));
+      // Yanlış cevaplı butonları bul
+      const wrongButtons = buttons.filter(btn => btn.innerText !== currentQuestion.correct);
+
+      // Rastgele 2 tanesini seçip devre dışı bırak
+      wrongButtons.sort(() => Math.random() - 0.5);
+      wrongButtons.slice(0, 2).forEach(btn => {
+        btn.disabled = true;
+        btn.innerText = "❌";
+      });
+    }
+
+    function useExtraTime() {
+      if(extraTimeUsed || isReviewMode) return;
+      extraTimeUsed = true;
+      document.getElementById('joker-time').disabled = true;
+
+      timeLeft += 10;
+      document.getElementById('timer-display').innerText = timeLeft + "s";
     }
 
     function startReviewMode() {
@@ -543,6 +624,9 @@
       }
       
       isReviewMode = true;
+      document.getElementById('joker-5050').disabled = true;
+      document.getElementById('joker-time').disabled = true;
+      document.getElementById('combo-banner').classList.add('hidden');
       document.getElementById('review-banner').classList.remove('hidden');
       document.getElementById('timer-display').innerText = "OFF";
       nextQuestion();
@@ -551,6 +635,7 @@
     function finishGame() {
       clearInterval(timerInterval);
       document.getElementById('review-banner').classList.add('hidden');
+      document.getElementById('combo-banner').classList.add('hidden');
       document.getElementById('game-play-area').classList.add('hidden');
       document.getElementById('game-over-area').classList.remove('hidden');
       document.getElementById('final-score').innerText = currentScore;
