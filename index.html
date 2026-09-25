@@ -14,6 +14,7 @@
     /* Leaderboard */
     .leaderboard-card { background: #151d2a; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; flex: 1; min-width: 280px; height: fit-content; }
     .leaderboard-title { font-size: 16px; font-weight: bold; color: #f59e0b; display: flex; align-items: center; gap: 8px; margin-bottom: 15px; }
+    .score-list { display: flex; flex-direction: column; gap: 8px; }
     .score-item { background: #222d3d; border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #2d3b4e; }
     .player-info { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 15px; }
     .badge { background: #3b82f6; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
@@ -55,7 +56,11 @@
     
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .option-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .option-btn:hover { background: #334155; border-color: #3b82f6; }
+    .option-btn:hover:not(:disabled) { background: #334155; border-color: #3b82f6; }
+    
+    /* Doğru/Yanlış Efekt Renkleri */
+    .option-btn.correct-highlight { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; font-weight: bold; }
+    .option-btn.wrong-highlight { background: #7f1d1d !important; border-color: #ef4444 !important; color: #f87171 !important; }
 
     .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
@@ -75,11 +80,8 @@
   <div id="auth-section" class="main-container">
     <div class="leaderboard-card">
       <div class="leaderboard-title">🏆 Top Scores</div>
-      <div id="leaderboard-list">
-        <div class="score-item">
-          <div class="player-info"><span>#1</span><span>🦊 zehra</span></div>
-          <div><span class="badge">A2</span><span class="points">180 Pts</span></div>
-        </div>
+      <div id="leaderboard-list" class="score-list">
+        <!-- JS ile Dolacak -->
       </div>
     </div>
 
@@ -143,7 +145,7 @@
 
     <div id="game-play-area">
       <div class="word-box">
-        <p style="color: #64748b; font-size: 12px; margin-bottom: 5px;">Choose the correct synonym or definition:</p>
+        <p style="color: #64748b; font-size: 12px; margin-bottom: 5px;">Choose the correct synonym or translation:</p>
         <div id="target-word" class="target-word">Start</div>
       </div>
 
@@ -167,327 +169,174 @@
     let timeLeft = 60;
     let timerInterval = null;
     let currentQuestion = null;
+    let canAnswer = true;
 
-    // 50 WORDS PER LEVEL (SYNONYMS & DEFINITIONS)
+    // ORTAOKUL & LİSE MÜFREDATINA UYGUN DENGELİ KELİME LİSTESİ
     const wordDatabase = {
       A1: [
-        { word: "Begin", correct: "Start", wrong: ["End", "Stop", "Close"] },
-        { word: "Big", correct: "Large", wrong: ["Small", "Tiny", "Short"] },
+        { word: "Start", correct: "Begin", wrong: ["End", "Finish", "Stop"] },
+        { word: "Big", correct: "Large", wrong: ["Small", "Tiny", "Little"] },
         { word: "Happy", correct: "Glad", wrong: ["Sad", "Angry", "Upset"] },
         { word: "Fast", correct: "Quick", wrong: ["Slow", "Late", "Heavy"] },
         { word: "Small", correct: "Little", wrong: ["Huge", "Tall", "Wide"] },
-        { word: "Silent", correct: "Quiet", wrong: ["Loud", "Noisy", "Bright"] },
-        { word: "Smart", correct: "Clever", wrong: ["Stupid", "Foolish", "Lazy"] },
+        { word: "Quiet", correct: "Silent", wrong: ["Loud", "Noisy", "Bright"] },
+        { word: "Smart", correct: "Clever", wrong: ["Lazy", "Slow", "Silly"] },
         { word: "Buy", correct: "Purchase", wrong: ["Sell", "Give", "Take"] },
         { word: "Hard", correct: "Difficult", wrong: ["Easy", "Soft", "Simple"] },
         { word: "Correct", correct: "Right", wrong: ["Wrong", "False", "Bad"] },
-        { word: "Infant", correct: "Baby", wrong: ["Adult", "Elder", "Parent"] },
-        { word: "Select", correct: "Choose", wrong: ["Reject", "Ignore", "Drop"] },
         { word: "Gift", correct: "Present", wrong: ["Debt", "Price", "Cost"] },
-        { word: "Finish", correct: "End", wrong: ["Begin", "Start", "Open"] },
-        { word: "Stone", correct: "Rock", wrong: ["Paper", "Wood", "Glass"] },
-        { word: "Tidy", correct: "Neat", wrong: ["Dirty", "Messy", "Old"] },
-        { word: "Glad", correct: "Joyful", wrong: ["Unhappy", "Scared", "Sick"] },
         { word: "Help", correct: "Assist", wrong: ["Hurt", "Stop", "Block"] },
-        { word: "Shout", correct: "Yell", wrong: ["Whisper", "Sleep", "Listen"] },
-        { word: "Simple", correct: "Easy", wrong: ["Hard", "Complex", "Tough"] },
+        { word: "Simple", correct: "Easy", wrong: ["Hard", "Tough", "Complex"] },
         { word: "Sad", correct: "Unhappy", wrong: ["Cheerful", "Brave", "Kind"] },
-        { word: "Loud", correct: "Noisy", wrong: ["Quiet", "Silent", "Calm"] },
         { word: "Rich", correct: "Wealthy", wrong: ["Poor", "Weak", "Sick"] },
-        { word: "Center", correct: "Middle", wrong: ["Edge", "Border", "Corner"] },
         { word: "Trip", correct: "Journey", wrong: ["Home", "Stay", "Rest"] },
-        { word: "Broad", correct: "Wide", wrong: ["Narrow", "Slim", "Thin"] },
         { word: "Sick", correct: "Ill", wrong: ["Healthy", "Strong", "Fit"] },
-        { word: "Fear", correct: "Dread", wrong: ["Hope", "Peace", "Love"] },
-        { word: "Rule", correct: "Law", wrong: ["Chance", "Error", "Fact"] },
-        { word: "Answer", correct: "Reply", wrong: ["Question", "Ask", "Doubt"] },
-        { word: "Build", correct: "Construct", wrong: ["Destroy", "Break", "Ruined"] },
-        { word: "Close", correct: "Shut", wrong: ["Open", "Start", "Free"] },
-        { word: "Job", correct: "Occupation", wrong: ["Hobby", "Game", "Sport"] },
-        { word: "Enemy", correct: "Foe", wrong: ["Friend", "Ally", "Partner"] },
-        { word: "False", correct: "Untrue", wrong: ["Real", "Exact", "True"] },
-        { word: "Famous", correct: "Well-known", wrong: ["Secret", "Unknown", "Hidden"] },
-        { word: "Gather", correct: "Collect", wrong: ["Scatter", "Divide", "Separate"] },
-        { word: "Gaze", correct: "Stare", wrong: ["Blink", "Ignore", "Hide"] },
-        { word: "Halt", correct: "Stop", wrong: ["Go", "Run", "Move"] },
-        { word: "Idea", correct: "Thought", wrong: ["Action", "Thing", "Result"] },
-        { word: "Jump", correct: "Leap", wrong: ["Fall", "Sit", "Sleep"] },
-        { word: "Kind", correct: "Caring", wrong: ["Mean", "Cruel", "Harsh"] },
-        { word: "Last", correct: "Final", wrong: ["First", "Early", "New"] },
-        { word: "Make", correct: "Create", wrong: ["Destroy", "Break", "Lose"] },
-        { word: "Near", correct: "Close", wrong: ["Far", "Distant", "Remote"] },
-        { word: "Odd", correct: "Strange", wrong: ["Normal", "Usual", "Regular"] },
-        { word: "Page", correct: "Sheet", wrong: ["Book", "Cover", "Pen"] },
-        { word: "Raise", correct: "Lift", wrong: ["Lower", "Drop", "Fall"] },
-        { word: "Safe", correct: "Secure", wrong: ["Dangerous", "Risky", "Harmful"] },
-        { word: "Speak", correct: "Talk", wrong: ["Listen", "Mute", "Read"] }
+        { word: "Speak", correct: "Talk", wrong: ["Listen", "Mute", "Read"] },
+        { word: "Select", correct: "Choose", wrong: ["Drop", "Reject", "Lose"] },
+        { word: "Safe", correct: "Secure", wrong: ["Risky", "Harmful", "Danger"] }
       ],
       A2: [
-        { word: "Annual", correct: "Yearly", wrong: ["Monthly", "Daily", "Weekly"] },
-        { word: "Brave", correct: "Courageous", wrong: ["Cowardly", "Timid", "Afraid"] },
-        { word: "Brief", correct: "Short", wrong: ["Long", "Endless", "Huge"] },
-        { word: "Calm", correct: "Peaceful", wrong: ["Stormy", "Wild", "Loud"] },
-        { word: "Caution", correct: "Warning", wrong: ["Danger", "Safety", "Risk"] },
-        { word: "Delight", correct: "Joy", wrong: ["Sorrow", "Pain", "Anger"] },
-        { word: "Eager", correct: "Keen", wrong: ["Bored", "Lazy", "Slow"] },
-        { word: "Entire", correct: "Whole", wrong: ["Part", "Section", "Piece"] },
-        { word: "Exact", correct: "Precise", wrong: ["Vague", "Rough", "Wrong"] },
-        { word: "Fair", correct: "Just", wrong: ["Biased", "Unfair", "Cruel"] },
-        { word: "Gain", correct: "Acquire", wrong: ["Lose", "Drop", "Miss"] },
-        { word: "Gentle", correct: "Mild", wrong: ["Rough", "Violent", "Harsh"] },
-        { word: "Honest", correct: "Sincere", wrong: ["Liar", "Fake", "Shady"] },
+        { word: "Brave", correct: "Courageous", wrong: ["Scared", "Afraid", "Timid"] },
+        { word: "Calm", correct: "Peaceful", wrong: ["Angry", "Wild", "Loud"] },
+        { word: "Famous", correct: "Well-known", wrong: ["Secret", "Unknown", "Hidden"] },
         { word: "Huge", correct: "Enormous", wrong: ["Tiny", "Small", "Mini"] },
-        { word: "Intelligent", correct: "Smart", wrong: ["Dull", "Foolish", "Slow"] },
-        { word: "Jealous", correct: "Envious", wrong: ["Proud", "Happy", "Kind"] },
-        { word: "Loyal", correct: "Faithful", wrong: ["Traitor", "False", "Unfair"] },
-        { word: "Major", correct: "Important", wrong: ["Minor", "Small", "Slight"] },
-        { word: "Neat", correct: "Organized", wrong: ["Messy", "Dirty", "Random"] },
-        { word: "Obvious", correct: "Clear", wrong: ["Hidden", "Secret", "Vague"] },
         { word: "Polite", correct: "Courteous", wrong: ["Rude", "Impolite", "Harsh"] },
-        { word: "Prompt", correct: "Quick", wrong: ["Late", "Slow", "Delayed"] },
-        { word: "Rare", correct: "Uncommon", wrong: ["Frequent", "Usual", "Common"] },
-        { word: "Rough", correct: "Coarse", wrong: ["Smooth", "Soft", "Flat"] },
-        { word: "Slight", correct: "Small", wrong: ["Huge", "Massive", "Great"] },
-        { word: "Tough", correct: "Strong", wrong: ["Weak", "Soft", "Fragile"] },
-        { word: "Urgent", correct: "Pressing", wrong: ["Slow", "Casual", "Delayed"] },
-        { word: "Vacant", correct: "Empty", wrong: ["Full", "Busy", "Crowded"] },
-        { word: "Vivid", correct: "Bright", wrong: ["Dull", "Dark", "Faded"] },
-        { word: "Wise", correct: "Sensible", wrong: ["Foolish", "Silly", "Rash"] },
-        { word: "Allow", correct: "Permit", wrong: ["Forbid", "Ban", "Deny"] },
-        { word: "Banish", correct: "Expel", wrong: ["Welcome", "Keep", "Invite"] },
-        { word: "Combine", correct: "Merge", wrong: ["Divide", "Split", "Separate"] },
-        { word: "Damage", correct: "Harm", wrong: ["Heal", "Fix", "Repair"] },
-        { word: "Defend", correct: "Protect", wrong: ["Attack", "Harm", "Destroy"] },
-        { word: "Examine", correct: "Inspect", wrong: ["Ignore", "Skip", "Forget"] },
-        { word: "Forbid", correct: "Prohibit", wrong: ["Allow", "Permit", "Let"] },
-        { word: "Gather", correct: "Assemble", wrong: ["Scatter", "Disperse", "Divide"] },
-        { word: "Identify", correct: "Recognize", wrong: ["Ignore", "Confuse", "Forget"] },
-        { word: "Include", correct: "Contain", wrong: ["Exclude", "Remove", "Omit"] },
-        { word: "Modify", correct: "Change", wrong: ["Keep", "Fix", "Freeze"] },
-        { word: "Notice", correct: "Observe", wrong: ["Ignore", "Miss", "Blind"] },
-        { word: "Obtain", correct: "Get", wrong: ["Give", "Offer", "Lose"] },
-        { word: "Predict", correct: "Foretell", wrong: ["Recall", "Remember", "History"] },
+        { word: "Rare", correct: "Uncommon", wrong: ["Usual", "Frequent", "Common"] },
+        { word: "Wise", correct: "Smart", wrong: ["Foolish", "Silly", "Rash"] },
+        { word: "Allow", correct: "Permit", wrong: ["Ban", "Forbid", "Deny"] },
+        { word: "Protect", correct: "Defend", wrong: ["Attack", "Harm", "Destroy"] },
         { word: "Reduce", correct: "Decrease", wrong: ["Increase", "Grow", "Raise"] },
         { word: "Refuse", correct: "Decline", wrong: ["Accept", "Agree", "Grant"] },
-        { word: "Reveal", correct: "Disclose", wrong: ["Hide", "Cover", "Conceal"] },
         { word: "Succeed", correct: "Achieve", wrong: ["Fail", "Lose", "Quit"] },
-        { word: "Support", correct: "Assist", wrong: ["Oppose", "Hurt", "Block"] },
-        { word: "Vanish", correct: "Disappear", wrong: ["Appear", "Arrive", "Stay"] }
+        { word: "Vanish", correct: "Disappear", wrong: ["Appear", "Arrive", "Stay"] },
+        { word: "Brief", correct: "Short", wrong: ["Long", "Huge", "Endless"] },
+        { word: "Pardon", correct: "Forgive", wrong: ["Blame", "Punish", "Hate"] },
+        { word: "Neat", correct: "Tidy", wrong: ["Messy", "Dirty", "Random"] },
+        { word: "Annual", correct: "Yearly", wrong: ["Daily", "Weekly", "Monthly"] },
+        { word: "Gather", correct: "Collect", wrong: ["Scatter", "Divide", "Drop"] },
+        { word: "Goal", correct: "Target", wrong: ["Start", "Past", "Mistake"] },
+        { word: "Damage", correct: "Harm", wrong: ["Fix", "Heal", "Repair"] }
       ],
       B1: [
-        { word: "Accurate", correct: "Precise", wrong: ["Inaccurate", "Wrong", "Rough"] },
-        { word: "Adequate", correct: "Sufficient", wrong: ["Lacking", "Poor", "Scarce"] },
+        { word: "Accurate", correct: "Correct", wrong: ["Wrong", "False", "Rough"] },
+        { word: "Adequate", correct: "Sufficient", wrong: ["Poor", "Lacking", "Few"] },
         { word: "Advantage", correct: "Benefit", wrong: ["Drawback", "Loss", "Harm"] },
-        { word: "Apparent", correct: "Obvious", wrong: ["Hidden", "Obscure", "Vague"] },
-        { word: "Acknowledge", correct: "Admit", wrong: ["Deny", "Refuse", "Ignore"] },
-        { word: "Abundant", correct: "Plentiful", wrong: ["Scarce", "Rare", "Few"] },
-        { word: "Clarify", correct: "Explain", wrong: ["Confuse", "Obscure", "Complicate"] },
+        { word: "Clarify", correct: "Explain", wrong: ["Confuse", "Complicate", "Hide"] },
         { word: "Complicated", correct: "Complex", wrong: ["Simple", "Easy", "Direct"] },
-        { word: "Consequence", correct: "Outcome", wrong: ["Cause", "Origin", "Source"] },
-        { word: "Considerable", correct: "Significant", wrong: ["Slight", "Minor", "Tiny"] },
-        { word: "Crucial", correct: "Vital", wrong: ["Trivial", "Unimportant", "Minor"] },
+        { word: "Crucial", correct: "Vital", wrong: ["Minor", "Unimportant", "Slight"] },
         { word: "Demonstrate", correct: "Show", wrong: ["Hide", "Cover", "Mask"] },
-        { word: "Deteriorate", correct: "Worsen", wrong: ["Improve", "Heal", "Fix"] },
-        { word: "Distinct", correct: "Clear", wrong: ["Vague", "Fuzzy", "Same"] },
-        { word: "Efficient", correct: "Productive", wrong: ["Wasteful", "Slow", "Useless"] },
-        { word: "Emphasize", correct: "Highlight", wrong: ["Ignore", "Minimize", "Omit"] },
-        { word: "Establish", correct: "Set up", wrong: ["Destroy", "Ruined", "Break"] },
-        { word: "Evaluate", correct: "Assess", wrong: ["Ignore", "Guess", "Skip"] },
-        { word: "Evident", correct: "Clear", wrong: ["Hidden", "Secret", "Unclear"] },
-        { word: "Fundamental", correct: "Basic", wrong: ["Advanced", "Complex", "Extra"] },
-        { word: "Generate", correct: "Produce", wrong: ["Destroy", "End", "Kill"] },
-        { word: "Hesitate", correct: "Pause", wrong: ["Proceed", "Advance", "Rush"] },
-        { word: "Illuminate", correct: "Light up", wrong: ["Darken", "Hide", "Cover"] },
-        { word: "Inevitable", correct: "Unavoidable", wrong: ["Preventable", "Optional", "Unlikely"] },
+        { word: "Efficient", correct: "Productive", wrong: ["Slow", "Wasteful", "Lazy"] },
+        { word: "Hesitate", correct: "Pause", wrong: ["Rush", "Proceed", "Advance"] },
         { word: "Influence", correct: "Impact", wrong: ["Ignore", "Result", "End"] },
-        { word: "Initial", correct: "First", wrong: ["Final", "Last", "End"] },
         { word: "Inquire", correct: "Ask", wrong: ["Answer", "Reply", "State"] },
-        { word: "Maintain", correct: "Preserve", wrong: ["Abandon", "Destroy", "Drop"] },
-        { word: "Neglect", correct: "Ignore", wrong: ["Care", "Protect", "Watch"] },
-        { word: "Obstacle", correct: "Barrier", wrong: ["Helper", "Path", "Way"] },
-        { word: "Obtain", correct: "Acquire", wrong: ["Lose", "Surrender", "Drop"] },
-        { word: "Permanent", correct: "Lasting", wrong: ["Temporary", "Brief", "Short"] },
-        { word: "Persuade", correct: "Convince", wrong: ["Dissuade", "Force", "Block"] },
-        { word: "Plausible", correct: "Believable", wrong: ["Unlikely", "Impossible", "False"] },
-        { word: "Possess", correct: "Own", wrong: ["Lack", "Need", "Want"] },
-        { word: "Potential", correct: "Possible", wrong: ["Impossible", "Certain", "Past"] },
-        { word: "Predominant", correct: "Main", wrong: ["Minor", "Secondary", "Weak"] },
-        { word: "Principal", correct: "Main", wrong: ["Extra", "Minor", "Side"] },
-        { word: "Reluctant", correct: "Unwilling", wrong: ["Eager", "Keen", "Ready"] },
-        { word: "Resilient", correct: "Tough", wrong: ["Fragile", "Weak", "Soft"] },
-        { word: "Significant", correct: "Important", wrong: ["Trivial", "Minor", "Small"] },
+        { word: "Obstacle", correct: "Barrier", wrong: ["Path", "Helper", "Way"] },
+        { word: "Permanent", correct: "Lasting", wrong: ["Temporary", "Short", "Brief"] },
+        { word: "Persuade", correct: "Convince", wrong: ["Force", "Block", "Stop"] },
+        { word: "Potential", correct: "Possible", wrong: ["Certain", "Impossible", "Past"] },
+        { word: "Reluctant", correct: "Unwilling", wrong: ["Eager", "Ready", "Keen"] },
         { word: "Sufficient", correct: "Enough", wrong: ["Lacking", "Few", "Scarce"] },
-        { word: "Sustain", correct: "Support", wrong: ["Drop", "Harm", "Stop"] },
-        { word: "Tolerate", correct: "Endure", wrong: ["Reject", "Ban", "Refuse"] },
-        { word: "Ultimate", correct: "Final", wrong: ["First", "Initial", "Beginning"] },
-        { word: "Undergo", correct: "Experience", wrong: ["Avoid", "Bypass", "Skip"] },
-        { word: "Valid", correct: "Legitimate", wrong: ["Invalid", "False", "Fake"] },
-        { word: "Vague", correct: "Unclear", wrong: ["Sharp", "Clear", "Exact"] },
-        { word: "Yield", correct: "Produce", wrong: ["Hold", "Deny", "Stop"] },
-        { word: "Zone", correct: "Area", wrong: ["Border", "Line", "Edge"] }
+        { word: "Tolerate", correct: "Endure", wrong: ["Ban", "Reject", "Refuse"] },
+        { word: "Valid", correct: "Logical", wrong: ["False", "Invalid", "Fake"] },
+        { word: "Vague", correct: "Unclear", wrong: ["Sharp", "Exact", "Clear"] }
       ],
       B2: [
-        { word: "Ambiguous", correct: "Vague", wrong: ["Clear", "Explicit", "Direct"] },
-        { word: "Coherent", correct: "Logical", wrong: ["Confused", "Disorganized", "Random"] },
-        { word: "Comprehensive", correct: "Thorough", wrong: ["Partial", "Limited", "Narrow"] },
-        { word: "Concise", correct: "Brief", wrong: ["Wordy", "Long", "Detailed"] },
-        { word: "Deceptive", correct: "Misleading", wrong: ["Honest", "Frank", "True"] },
-        { word: "Depict", correct: "Portray", wrong: ["Hide", "Conceal", "Distort"] },
-        { word: "Divergent", correct: "Different", wrong: ["Similar", "Same", "Identical"] },
-        { word: "Dominant", correct: "Ruling", wrong: ["Weak", "Minor", "Submissive"] },
-        { word: "Elaborate", correct: "Detailed", wrong: ["Simple", "Basic", "Plain"] },
-        { word: "Equivocal", correct: "Uncertain", wrong: ["Certain", "Clear", "Sure"] },
-        { word: "Exaggerate", correct: "Overstate", wrong: ["Understate", "Minimize", "Hide"] },
-        { word: "Feasible", correct: "Possible", wrong: ["Unworkable", "Impossible", "Hard"] },
-        { word: "Fluctuate", correct: "Vary", wrong: ["Remain", "Stabilize", "Freeze"] },
-        { word: "Hostile", correct: "Unfriendly", wrong: ["Friendly", "Warm", "Kind"] },
+        { word: "Ambiguous", correct: "Unclear", wrong: ["Explicit", "Direct", "Clear"] },
+        { word: "Comprehensive", correct: "Thorough", wrong: ["Limited", "Partial", "Narrow"] },
+        { word: "Concise", correct: "Brief", wrong: ["Long", "Wordy", "Detailed"] },
+        { word: "Feasible", correct: "Possible", wrong: ["Impossible", "Hard", "Unworkable"] },
         { word: "Impartial", correct: "Neutral", wrong: ["Biased", "Unfair", "Partial"] },
-        { word: "Incentive", correct: "Motivation", wrong: ["Deterrent", "Obstacle", "Penalty"] },
-        { word: "Inherent", correct: "Intrinsic", wrong: ["External", "Added", "Extra"] },
-        { word: "Innovate", correct: "Pioneer", wrong: ["Copy", "Imitate", "Follow"] },
+        { word: "Incentive", correct: "Motivation", wrong: ["Penalty", "Obstacle", "Deterrent"] },
         { word: "Intricate", correct: "Complex", wrong: ["Simple", "Plain", "Direct"] },
-        { word: "Lucrative", correct: "Profitable", wrong: ["Unprofitable", "Costly", "Poor"] },
-        { word: "Manifest", correct: "Display", wrong: ["Conceal", "Hide", "Mask"] },
-        { word: "Nurture", correct: "Foster", wrong: ["Neglect", "Harm", "Abandon"] },
-        { word: "Obscure", correct: "Unclear", wrong: ["Famous", "Clear", "Bright"] },
-        { word: "Plausible", correct: "Credible", wrong: ["Unbelievable", "False", "Absurd"] },
-        { word: "Pragmatic", correct: "Practical", wrong: ["Idealistic", "Unrealistic", "Wild"] },
-        { word: "Profound", correct: "Deep", wrong: ["Shallow", "Slight", "Surface"] },
-        { word: "Redundant", correct: "Unnecessary", wrong: ["Essential", "Needed", "Vital"] },
-        { word: "Refine", correct: "Improve", wrong: ["Ruin", "Damage", "Degrade"] },
-        { word: "Rigid", correct: "Stiff", wrong: ["Flexible", "Soft", "Bendy"] },
-        { word: "Scrutinize", correct: "Inspect", wrong: ["Ignore", "Glance", "Skip"] },
-        { word: "Subtle", correct: "Delicate", wrong: ["Harsh", "Obvious", "Loud"] },
-        { word: "Surpass", correct: "Exceed", wrong: ["Fail", "Fall behind", "Drop"] },
-        { word: "Tangible", correct: "Concrete", wrong: ["Abstract", "Virtual", "Ghostly"] },
-        { word: "Tentative", correct: "Uncertain", wrong: ["Final", "Definite", "Sure"] },
-        { word: "Unanimous", correct: "United", wrong: ["Divided", "Split", "Opposed"] },
-        { word: "Valid", correct: "Sound", wrong: ["Invalid", "False", "Weak"] },
-        { word: "Versatile", correct: "Adaptable", wrong: ["Rigid", "Limited", "Fixed"] },
-        { word: "Vulnerable", correct: "Exposed", wrong: ["Protected", "Safe", "Secure"] },
+        { word: "Lucrative", correct: "Profitable", wrong: ["Costly", "Poor", "Unprofitable"] },
+        { word: "Pragmatic", correct: "Practical", wrong: ["Wild", "Idealistic", "Unrealistic"] },
+        { word: "Refine", correct: "Improve", wrong: ["Damage", "Ruin", "Degrade"] },
+        { word: "Rigid", correct: "Strict", wrong: ["Flexible", "Soft", "Bendy"] },
+        { word: "Subtle", correct: "Delicate", wrong: ["Loud", "Obvious", "Harsh"] },
+        { word: "Surpass", correct: "Exceed", wrong: ["Fail", "Drop", "Fall behind"] },
+        { word: "Tangible", correct: "Concrete", wrong: ["Virtual", "Abstract", "Ghostly"] },
+        { word: "Versatile", correct: "Adaptable", wrong: ["Fixed", "Limited", "Rigid"] },
+        { word: "Vulnerable", correct: "Defenseless", wrong: ["Protected", "Safe", "Secure"] },
         { word: "Wary", correct: "Cautious", wrong: ["Careless", "Rash", "Trusting"] },
-        { word: "Advocate", correct: "Support", wrong: ["Oppose", "Attack", "Deny"] },
-        { word: "Consolidate", correct: "Strengthen", wrong: ["Weaken", "Divide", "Split"] },
-        { word: "Discern", correct: "Perceive", wrong: ["Miss", "Ignore", "Overlook"] },
-        { word: "Elusive", correct: "Hard to find", wrong: ["Easy", "Direct", "Obvious"] },
-        { word: "Foster", correct: "Encourage", wrong: ["Suppress", "Block", "Stop"] },
-        { word: "Impede", correct: "Hinder", wrong: ["Help", "Assist", "Advance"] },
-        { word: "Mediate", correct: "Negotiate", wrong: ["Fight", "Argue", "Disagree"] },
-        { word: "Mitigate", correct: "Lessen", wrong: ["Intensify", "Increase", "Hurt"] },
-        { word: "Nullify", correct: "Cancel", wrong: ["Validate", "Confirm", "Start"] },
-        { word: "Reconcile", correct: "Harmonize", wrong: ["Separate", "Alienate", "Split"] },
-        { word: "Subvert", correct: "Undermine", wrong: ["Support", "Build", "Uphold"] }
+        { word: "Advocate", correct: "Support", wrong: ["Attack", "Oppose", "Deny"] },
+        { word: "Foster", correct: "Encourage", wrong: ["Stop", "Block", "Suppress"] },
+        { word: "Mitigate", correct: "Reduce", wrong: ["Increase", "Hurt", "Intensify"] }
       ],
       C1: [
-        { word: "Adversity", correct: "Hardship", wrong: ["Prosperity", "Luck", "Success"] },
-        { word: "Affluent", correct: "Wealthy", wrong: ["Poor", "Destitute", "Needy"] },
-        { word: "Benevolent", correct: "Kind", wrong: ["Malevolent", "Cruel", "Mean"] },
-        { word: "Candor", correct: "Frankness", wrong: ["Deceit", "Lies", "Dishonesty"] },
-        { word: "Cognizant", correct: "Aware", wrong: ["Unaware", "Ignorant", "Blind"] },
-        { word: "Deleterious", correct: "Harmful", wrong: ["Beneficial", "Helpful", "Safe"] },
-        { word: "Empathy", correct: "Compassion", wrong: ["Apathy", "Hatred", "Dislike"] },
-        { word: "Ephemeral", correct: "Short-lived", wrong: ["Eternal", "Permanent", "Long"] },
-        { word: "Exacerbate", correct: "Worsen", wrong: ["Alleviate", "Soothe", "Fix"] },
-        { word: "Fastidious", correct: "Meticulous", wrong: ["Careless", "Sloppy", "Easy"] },
-        { word: "Gregarious", correct: "Sociable", wrong: ["Reclusive", "Shy", "Reserved"] },
+        { word: "Adversity", correct: "Hardship", wrong: ["Luck", "Success", "Prosperity"] },
+        { word: "Affluent", correct: "Wealthy", wrong: ["Poor", "Needy", "Destitute"] },
+        { word: "Candor", correct: "Honesty", wrong: ["Lies", "Deceit", "Dishonesty"] },
+        { word: "Cognizant", correct: "Aware", wrong: ["Blind", "Ignorant", "Unaware"] },
+        { word: "Empathy", correct: "Compassion", wrong: ["Hatred", "Apathy", "Dislike"] },
+        { word: "Ephemeral", correct: "Temporary", wrong: ["Eternal", "Permanent", "Long"] },
+        { word: "Fastidious", correct: "Meticulous", wrong: ["Careless", "Easy", "Sloppy"] },
         { word: "Impeccable", correct: "Flawless", wrong: ["Faulty", "Defective", "Poor"] },
-        { word: "Indifferent", correct: "Unconcerned", wrong: ["Caring", "Eager", "Passionate"] },
-        { word: "Insolent", correct: "Rude", wrong: ["Polite", "Humble", "Respectful"] },
-        { word: "Meticulous", correct: "Thorough", wrong: ["Sloppy", "Careless", "Quick"] },
-        { word: "Nefarious", correct: "Wicked", wrong: ["Noble", "Good", "Kind"] },
-        { word: "Ostentatious", correct: "Showy", wrong: ["Modest", "Plain", "Simple"] },
-        { word: "Pragmatic", correct: "Realistic", wrong: ["Idealistic", "Fanciful", "Wild"] },
-        { word: "Quintessential", correct: "Typical", wrong: ["Unusual", "Atypical", "Rare"] },
-        { word: "Robust", correct: "Sturdy", wrong: ["Fragile", "Weak", "Flimsy"] },
-        { word: "Scrupulous", correct: "Honest", wrong: ["Dishonest", "Careless", "Shady"] },
-        { word: "Superfluous", correct: "Extra", wrong: ["Essential", "Needed", "Vital"] },
-        { word: "Tenacious", correct: "Persistent", wrong: ["Yielding", "Weak", "Irresolute"] },
-        { word: "Ubiquitous", correct: "Omnipresent", wrong: ["Rare", "Scarce", "Unique"] },
-        { word: "Venerable", correct: "Respected", wrong: ["Disgraced", "Unrespected", "Young"] },
-        { word: "Vindicate", correct: "Clear", wrong: ["Blame", "Accuse", "Convict"] },
-        { word: "Zealot", correct: "Fanatic", wrong: ["Moderate", "Apathetic", "Calm"] },
-        { word: "Abstain", correct: "Refrain", wrong: ["Indulge", "Participate", "Join"] },
-        { word: "Acquiesce", correct: "Comply", wrong: ["Resist", "Refuse", "Protest"] },
+        { word: "Meticulous", correct: "Careful", wrong: ["Quick", "Sloppy", "Careless"] },
+        { word: "Pragmatic", correct: "Realistic", wrong: ["Wild", "Idealistic", "Fanciful"] },
+        { word: "Robust", correct: "Strong", wrong: ["Fragile", "Weak", "Flimsy"] },
+        { word: "Tenacious", correct: "Persistent", wrong: ["Weak", "Yielding", "Soft"] },
+        { word: "Ubiquitous", correct: "Widespread", wrong: ["Rare", "Unique", "Scarce"] },
         { word: "Anomalous", correct: "Irregular", wrong: ["Normal", "Usual", "Standard"] },
-        { word: "Brevity", correct: "Conciseness", wrong: ["Verbosity", "Length", "Duration"] },
-        { word: "Capricious", correct: "Fickle", wrong: ["Predictable", "Constant", "Stable"] },
-        { word: "Divergence", correct: "Difference", wrong: ["Similarity", "Union", "Agreement"] },
-        { word: "Enigma", correct: "Mystery", wrong: ["Clarity", "Fact", "Truth"] },
-        { word: "Furtive", correct: "Secretive", wrong: ["Open", "Frank", "Public"] },
-        { word: "Garrulous", correct: "Talkative", wrong: ["Silent", "Taciturn", "Quiet"] },
-        { word: "Harangue", correct: "Lecture", wrong: ["Praise", "Whisper", "Silence"] },
-        { word: "Inexorable", correct: "Relentless", wrong: ["Yielding", "Flexible", "Soft"] },
-        { word: "Juxtapose", correct: "Place side by side", wrong: ["Separate", "Distance", "Remove"] },
+        { word: "Brevity", correct: "Conciseness", wrong: ["Length", "Verbosity", "Duration"] },
+        { word: "Capricious", correct: "Unpredictable", wrong: ["Constant", "Stable", "Predictable"] },
+        { word: "Enigma", correct: "Mystery", wrong: ["Truth", "Fact", "Clarity"] },
         { word: "Lethargic", correct: "Sluggish", wrong: ["Energetic", "Active", "Lively"] },
-        { word: "Magnanimous", correct: "Forgiving", wrong: ["Petty", "Mean", "Spiteful"] },
-        { word: "Nonchalant", correct: "Unconcerned", wrong: ["Anxious", "Eager", "Worried"] },
-        { word: "Ominous", correct: "Threatening", wrong: ["Promising", "Bright", "Safe"] },
-        { word: "Paradox", correct: "Contradiction", wrong: ["Consistency", "Fact", "Truth"] },
-        { word: "Recluse", correct: "Hermit", wrong: ["Extrovert", "Socialite", "Leader"] },
-        { word: "Synergy", correct: "Cooperation", wrong: ["Conflict", "Discord", "Separation"] },
-        { word: "Trepidation", correct: "Fear", wrong: ["Calmness", "Courage", "Peace"] },
-        { word: "Utilitarian", correct: "Practical", wrong: ["Decorative", "Useless", "Fancy"] },
-        { word: "Vacillate", correct: "Waver", wrong: ["Decide", "Persist", "Stay"] },
-        { word: "Wistful", correct: "Longing", wrong: ["Content", "Happy", "Satisfied"] }
+        { word: "Nonchalant", correct: "Calm", wrong: ["Worried", "Anxious", "Eager"] },
+        { word: "Utilitarian", correct: "Practical", wrong: ["Useless", "Decorative", "Fancy"] }
       ],
       C2: [
-        { word: "Abstruse", correct: "Obscure", wrong: ["Clear", "Simple", "Obvious"] },
-        { word: "Acumen", correct: "Insight", wrong: ["Stupidity", "Ignorance", "Slow"] },
-        { word: "Alacrity", correct: "Eagerness", wrong: ["Apathy", "Reluctance", "Slowness"] },
-        { word: "Anachronism", correct: "Misplacement in time", wrong: ["Timeline", "Fact", "Current"] },
-        { word: "Banal", correct: "Trite", wrong: ["Original", "Fresh", "Unique"] },
-        { word: "Cajole", correct: "Coax", wrong: ["Force", "Bully", "Demand"] },
-        { word: "Conundrum", correct: "Enigma", wrong: ["Solution", "Answer", "Explanation"] },
-        { word: "Disparate", correct: "Distinct", wrong: ["Identical", "Equal", "Same"] },
-        { word: "Ebullient", correct: "Exuberant", wrong: ["Depressed", "Gloomy", "Apathetic"] },
-        { word: "Esoteric", correct: "Abstruse", wrong: ["Common", "Public", "Known"] },
-        { word: "Inscrutable", correct: "Enigmatic", wrong: ["Clear", "Transparent", "Easy"] },
-        { word: "Intransigent", correct: "Uncompromising", wrong: ["Flexible", "Yielding", "Soft"] },
-        { word: "Laconic", correct: "Terse", wrong: ["Wordy", "Verbose", "Garrulous"] },
-        { word: "Mendacious", correct: "Untruthful", wrong: ["Honest", "Frank", "Truthful"] },
-        { word: "Obsequious", correct: "Servile", wrong: ["Arrogant", "Rebellious", "Proud"] },
-        { word: "Paucity", correct: "Scarcity", wrong: ["Abundance", "Plenty", "Surplus"] },
-        { word: "Pedantic", correct: "Overly precise", wrong: ["Imprecise", "Careless", "Casual"] },
-        { word: "Perfunctory", correct: "Cursory", wrong: ["Thorough", "Careful", "Detailed"] },
-        { word: "Pervasive", correct: "Spreading widely", wrong: ["Limited", "Narrow", "Local"] },
-        { word: "Recalcitrant", correct: "Defiant", wrong: ["Obedient", "Compliant", "Passive"] },
-        { word: "Salubrious", correct: "Healthy", wrong: ["Unhealthy", "Harmful", "Toxic"] },
-        { word: "Sycophant", correct: "Flatterer", wrong: ["Critic", "Enemy", "Opponent"] },
-        { word: "Taciturn", correct: "Untalkative", wrong: ["Talkative", "Garrulous", "Loud"] },
-        { word: "Tenuous", correct: "Flimsy", wrong: ["Strong", "Solid", "Firm"] },
-        { word: "Truculent", correct: "Aggressive", wrong: ["Peaceful", "Gentle", "Kind"] },
-        { word: "Vicissitude", correct: "Change", wrong: ["Stability", "Permanence", "Stillness"] },
-        { word: "Volatile", correct: "Unstable", wrong: ["Calm", "Steady", "Fixed"] },
-        { word: "Axiomatic", correct: "Self-evident", wrong: ["Questionable", "Uncertain", "False"] },
-        { word: "Beguile", correct: "Charming", wrong: ["Repel", "Disgust", "Bore"] },
-        { word: "Chicanery", correct: "Trickery", wrong: ["Honesty", "Candor", "Fairness"] },
-        { word: "Desiccate", correct: "Dry up", wrong: ["Moisten", "Soak", "Water"] },
-        { word: "Diffident", correct: "Shy", wrong: ["Confident", "Bold", "Proud"] },
-        { word: "Equanimity", correct: "Composure", wrong: ["Agitation", "Panic", "Anger"] },
-        { word: "Expedite", correct: "Speed up", wrong: ["Delay", "Hinder", "Slow"] },
-        { word: "Inchoate", correct: "Undeveloped", wrong: ["Mature", "Finished", "Full"] },
-        { word: "Inimical", correct: "Hostile", wrong: ["Friendly", "Favorable", "Kind"] },
-        { word: "Loquacious", correct: "Talkative", wrong: ["Silent", "Quiet", "Mute"] },
-        { word: "Lugubrious", correct: "Mournful", wrong: ["Cheerful", "Joyful", "Happy"] },
-        { word: "Maelstrom", correct: "Whirlpool", wrong: ["Calm", "Peace", "Stillness"] },
-        { word: "Neophyte", correct: "Beginner", wrong: ["Expert", "Veteran", "Master"] },
-        { word: "Obdurate", correct: "Stubborn", wrong: ["Flexible", "Yielding", "Soft"] },
-        { word: "Pellucid", correct: "Transparent", wrong: ["Opaque", "Muddy", "Dark"] },
-        { word: "Penury", correct: "Extreme poverty", wrong: ["Wealth", "Affluence", "Luxury"] },
-        { word: "Pugnacious", correct: "Combative", wrong: ["Peaceful", "Friendly", "Calm"] },
-        { word: "Quixotic", correct: "Idealistic", wrong: ["Practical", "Realistic", "Sensible"] },
-        { word: "Recondite", correct: "Little known", wrong: ["Famous", "Obvious", "Simple"] },
-        { word: "Sanguine", correct: "Optimistic", wrong: ["Pessimistic", "Gloomy", "Sad"] },
-        { word: "Spurious", correct: "False", wrong: ["Genuine", "Authentic", "True"] },
-        { word: "Torpid", correct: "Inactive", wrong: ["Active", "Lively", "Energetic"] },
-        { word: "Zeal", correct: "Enthusiasm", wrong: ["Apathy", "Indifference", "Coldness"] }
+        { word: "Acumen", correct: "Insight", wrong: ["Slow", "Stupidity", "Ignorance"] },
+        { word: "Alacrity", correct: "Eagerness", wrong: ["Slowness", "Apathy", "Reluctance"] },
+        { word: "Banal", correct: "Common", wrong: ["Fresh", "Original", "Unique"] },
+        { word: "Conundrum", correct: "Puzzle", wrong: ["Answer", "Solution", "Explanation"] },
+        { word: "Disparate", correct: "Different", wrong: ["Equal", "Identical", "Same"] },
+        { word: "Esoteric", correct: "Specialized", wrong: ["Known", "Public", "Common"] },
+        { word: "Inscrutable", correct: "Mysterious", wrong: ["Easy", "Clear", "Transparent"] },
+        { word: "Laconic", correct: "Brief", wrong: ["Wordy", "Verbose", "Garrulous"] },
+        { word: "Obsequious", correct: "Servile", wrong: ["Proud", "Arrogant", "Rebellious"] },
+        { word: "Paucity", correct: "Scarcity", wrong: ["Plenty", "Surplus", "Abundance"] },
+        { word: "Perfunctory", correct: "Careless", wrong: ["Detailed", "Thorough", "Careful"] },
+        { word: "Recalcitrant", correct: "Rebellious", wrong: ["Passive", "Obedient", "Compliant"] },
+        { word: "Salubrious", correct: "Healthy", wrong: ["Toxic", "Unhealthy", "Harmful"] },
+        { word: "Taciturn", correct: "Quiet", wrong: ["Loud", "Talkative", "Garrulous"] },
+        { word: "Tenuous", correct: "Weak", wrong: ["Firm", "Solid", "Strong"] },
+        { word: "Volatile", correct: "Unstable", wrong: ["Fixed", "Calm", "Steady"] },
+        { word: "Expedite", correct: "Speed up", wrong: ["Slow", "Delay", "Hinder"] },
+        { word: "Pellucid", correct: "Clear", wrong: ["Dark", "Opaque", "Muddy"] },
+        { word: "Spurious", correct: "Fake", wrong: ["True", "Genuine", "Authentic"] },
+        { word: "Zeal", correct: "Passion", wrong: ["Coldness", "Apathy", "Indifference"] }
       ]
     };
 
     window.onload = function() {
+      updateLeaderboard();
       const activeUser = JSON.parse(localStorage.getItem('activeUser'));
       if (activeUser) loginUser(activeUser);
     };
+
+    function updateLeaderboard() {
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const board = document.getElementById('leaderboard-list');
+      
+      users.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+      if(users.length === 0) {
+        board.innerHTML = `<div style="color:#64748b; font-size:13px; text-align:center;">No scores yet!</div>`;
+        return;
+      }
+
+      board.innerHTML = users.slice(0, 5).map((u, i) => `
+        <div class="score-item">
+          <div class="player-info">
+            <span>#${i + 1}</span>
+            <span>${u.avatar || '🦊'} ${u.username}</span>
+          </div>
+          <div>
+            <span class="badge">${u.lastLevel || 'A1'}</span>
+            <span class="points">${u.score || 0} Pts</span>
+          </div>
+        </div>
+      `).join('');
+    }
 
     function selectAvatar(el, avatar) {
       document.querySelectorAll('.avatar-item').forEach(i => i.classList.remove('selected'));
@@ -517,8 +366,9 @@
       const users = JSON.parse(localStorage.getItem('users')) || [];
       if(users.some(x => x.username === u)) return showMessage("Username already taken!", "error");
 
-      users.push({ username: u, password: p, avatar: selectedAvatar, score: 0 });
+      users.push({ username: u, password: p, avatar: selectedAvatar, score: 0, lastLevel: 'A1' });
       localStorage.setItem('users', JSON.stringify(users));
+      updateLeaderboard();
       showMessage("Account created! Please log in.", "success");
       setTimeout(() => switchTab('login'), 1000);
     }
@@ -557,12 +407,14 @@
       currentScore = 0;
       lives = 3;
       timeLeft = 60;
+      canAnswer = true;
       
       document.getElementById('game-play-area').classList.remove('hidden');
       document.getElementById('game-over-area').classList.add('hidden');
       document.getElementById('current-score').innerText = currentScore;
       document.getElementById('lives-display').innerText = "❤️".repeat(lives);
       document.getElementById('timer-display').innerText = timeLeft + "s";
+      document.getElementById('game-msg').className = "message";
       
       startTimer();
       nextQuestion();
@@ -579,6 +431,9 @@
     }
 
     function nextQuestion() {
+      canAnswer = true;
+      document.getElementById('game-msg').className = "message";
+      
       const pool = wordDatabase[currentLevel] || wordDatabase['A1'];
       const index = Math.floor(Math.random() * pool.length);
       currentQuestion = pool[index];
@@ -592,29 +447,44 @@
         const btn = document.createElement('button');
         btn.className = 'option-btn';
         btn.innerText = o;
-        btn.onclick = () => checkAnswer(o);
+        btn.onclick = (e) => checkAnswer(o, e.target);
         container.appendChild(btn);
       });
     }
 
-    function checkAnswer(selected) {
+    function checkAnswer(selected, targetBtn) {
+      if(!canAnswer) return;
+      canAnswer = false;
+
       const msg = document.getElementById('game-msg');
+      const allButtons = document.querySelectorAll('.option-btn');
+
       if(selected === currentQuestion.correct) {
         currentScore += 10;
         document.getElementById('current-score').innerText = currentScore;
+        targetBtn.classList.add('correct-highlight');
+        
         msg.innerText = "Correct! 🎉 (+10 Pts)";
         msg.className = "message success";
         setTimeout(nextQuestion, 800);
       } else {
         lives--;
         document.getElementById('lives-display').innerText = "❤️".repeat(Math.max(0, lives));
-        msg.innerText = "Wrong Answer! ❌";
+        
+        targetBtn.classList.add('wrong-highlight');
+        allButtons.forEach(btn => {
+          if(btn.innerText === currentQuestion.correct) {
+            btn.classList.add('correct-highlight');
+          }
+        });
+
+        msg.innerText = `Wrong! Correct answer was "${currentQuestion.correct}" ❌`;
         msg.className = "message error";
         
         if(lives <= 0) {
-          gameOver("Out of lives!");
+          setTimeout(() => gameOver("Out of lives!"), 1400);
         } else {
-          setTimeout(nextQuestion, 800);
+          setTimeout(nextQuestion, 1400);
         }
       }
     }
@@ -625,6 +495,29 @@
       document.getElementById('game-over-area').classList.remove('hidden');
       document.getElementById('final-score').innerText = currentScore;
       document.getElementById('game-msg').className = "message";
+
+      saveUserScore();
+    }
+
+    function saveUserScore() {
+      const activeUser = JSON.parse(localStorage.getItem('activeUser'));
+      if(!activeUser) return;
+
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const userIndex = users.findIndex(u => u.username === activeUser.username);
+
+      if(userIndex !== -1) {
+        if(currentScore > (users[userIndex].score || 0)) {
+          users[userIndex].score = currentScore;
+          users[userIndex].lastLevel = currentLevel;
+          activeUser.score = currentScore;
+          activeUser.lastLevel = currentLevel;
+          
+          localStorage.setItem('users', JSON.stringify(users));
+          localStorage.setItem('activeUser', JSON.stringify(activeUser));
+        }
+      }
+      updateLeaderboard();
     }
 
     function logout() {
@@ -632,6 +525,7 @@
       localStorage.removeItem('activeUser');
       document.getElementById('game-section').classList.add('hidden');
       document.getElementById('auth-section').classList.remove('hidden');
+      updateLeaderboard();
     }
 
     function showMessage(m, type) {
