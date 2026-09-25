@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twin Words - Login</title>
+  <title>Twin Words</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #0b0f19; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
     
-    .title { font-size: 32px; font-weight: 800; color: #3b82f6; margin-bottom: 30px; letter-spacing: 2px; }
+    .title { font-size: 32px; font-weight: 800; color: #3b82f6; margin-bottom: 30px; letter-spacing: 2px; text-transform: uppercase; }
     
-    .main-container { display: flex; gap: 20px; width: 100%; max-width: 900px; flex-wrap: wrap; }
+    .main-container { display: flex; gap: 20px; width: 100%; max-width: 900px; flex-wrap: wrap; justify-content: center; }
     
     /* Sol Panel (Skorlar) */
     .leaderboard-card { background: #151d2a; border: 1px solid #1e293b; border-radius: 16px; padding: 20px; flex: 1; min-width: 280px; height: fit-content; }
@@ -34,16 +34,32 @@
     .btn-submit { width: 100%; padding: 12px; background: #3730a3; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px; }
     .btn-submit:hover { background: #4338ca; }
     
-    /* Profil Seçimi (Mobil Uyumlu Avatar) */
+    /* Profil Seçimi */
     .avatar-title { font-size: 11px; font-weight: bold; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; text-align: center; }
     .avatar-list { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
     .avatar-item { font-size: 24px; padding: 8px 12px; border-radius: 8px; background: #0f172a; border: 1px solid #1e293b; cursor: pointer; transition: 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; }
     .avatar-item.selected { border-color: #3b82f6; background: #1e1b4b; }
     
+    /* Oyun Alanı CSS */
+    .game-card { background: #151d2a; border: 1px solid #1e293b; border-radius: 16px; padding: 25px; width: 100%; max-width: 600px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
+    .game-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 15px; }
+    .user-badge { font-weight: bold; font-size: 16px; color: #3b82f6; display: flex; align-items: center; gap: 8px; }
+    .score-board { font-size: 16px; font-weight: bold; color: #f59e0b; }
+    
+    .word-box { background: #0f172a; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; margin: 10px 0; }
+    .target-word { font-size: 28px; font-weight: 800; color: #38bdf8; letter-spacing: 1px; }
+    
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .option-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .option-btn:hover { background: #334155; border-color: #3b82f6; }
+
     .message { font-size: 13px; text-align: center; margin-top: 10px; padding: 8px; border-radius: 6px; display: none; width: 100%; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
     .message.success { background: #064e3b; color: #34d399; display: block; }
     
+    .btn-logout { background: #7f1d1d; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+    .btn-logout:hover { background: #991b1b; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -51,18 +67,21 @@
 
   <div class="title">TWIN WORDS</div>
 
-  <div class="main-container">
+  <!-- GİRİŞ/KAYIT PANELERİ -->
+  <div id="auth-section" class="main-container">
     <!-- Sol Skor Paneli -->
     <div class="leaderboard-card">
       <div class="leaderboard-title">🏆 Top 10 Scores</div>
-      <div class="score-item">
-        <div class="player-info">
-          <span>#1</span>
-          <span>🦊 zehra</span>
-        </div>
-        <div>
-          <span class="badge">A2</span>
-          <span class="points">180 Pts</span>
+      <div id="leaderboard-list">
+        <div class="score-item">
+          <div class="player-info">
+            <span>#1</span>
+            <span>🦊 zehra</span>
+          </div>
+          <div>
+            <span class="badge">A2</span>
+            <span class="points">180 Pts</span>
+          </div>
         </div>
       </div>
     </div>
@@ -96,24 +115,53 @@
         <button class="btn-submit" onclick="kayitol()">Hesap Oluştur</button>
       </div>
 
-      <!-- OYUNCU ONAY/DASHBOARD EKRANI -->
-      <div id="dashboard-form" class="form-box hidden" style="text-align: center;">
-        <h3 id="welcome-text" style="margin-bottom: 10px;">Hoş Geldin!</h3>
-        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Oturumun açık.</p>
-        <button class="btn-submit" onclick="cikisYap()" style="background: #991b1b;">Çıkış Yap</button>
-      </div>
-
       <div id="msg" class="message"></div>
     </div>
   </div>
 
+  <!-- CANLI OYUN ALANI (Giriş Yapılınca Açılır) -->
+  <div id="game-section" class="game-card hidden">
+    <div class="game-header">
+      <div class="user-badge">
+        <span id="user-avatar">🦊</span>
+        <span id="user-name">Oyuncu</span>
+      </div>
+      <div class="score-board">Skor: <span id="current-score">0</span></div>
+      <button class="btn-logout" onclick="cikisYap()">Çıkış Yap</button>
+    </div>
+
+    <div class="word-box">
+      <p style="color: #64748b; font-size: 13px; margin-bottom: 5px;">Bu kelimenin Türkçe karşılığı nedir?</p>
+      <div id="target-word" class="target-word">Apple</div>
+    </div>
+
+    <div class="options-grid" id="options-container">
+      <!-- Seçenekler JS ile dolacak -->
+    </div>
+
+    <div id="game-msg" class="message"></div>
+  </div>
+
   <script>
     let secilenAvatar = '🦊';
+    let aktifKullaniciData = null;
+    let mevcutSkor = 0;
+    let mevcutSoru = null;
+
+    // Örnek Kelime Havuzu
+    const kelimeler = [
+      { ing: "Apple", tr: "Elma", yanlislar: ["Armut", "Muz", "Çilek"] },
+      { ing: "Book", tr: "Kitap", yanlislar: ["Defter", "Kalem", "Masa"] },
+      { ing: "Water", tr: "Su", yanlislar: ["Süt", "Çay", "Kahve"] },
+      { ing: "Computer", tr: "Bilgisayar", yanlislar: ["Telefon", "Televizyon", "Radyo"] },
+      { ing: "Friend", tr: "Arkadaş", yanlislar: ["Düşman", "Öğretmen", "Komşu"] },
+      { ing: "School", tr: "Okul", yanlislar: ["Hastane", "Park", "Bina"] }
+    ];
 
     window.onload = function() {
       const aktif = JSON.parse(localStorage.getItem('aktifKullanici'));
       if (aktif) {
-        oturumAç(aktif.kullaniciAdi);
+        oturumAç(aktif);
       }
     };
 
@@ -153,7 +201,8 @@
         return;
       }
 
-      kullanicilar.push({ kullaniciAdi: username, sifre: password, avatar: secilenAvatar });
+      const yeniKullanici = { kullaniciAdi: username, sifre: password, avatar: secilenAvatar, skor: 0 };
+      kullanicilar.push(yeniKullanici);
       localStorage.setItem('kullanicilar', JSON.stringify(kullanicilar));
 
       mesajGoster("Kayıt başarılı! Giriş sekmesine geçiliyor...", "success");
@@ -169,27 +218,71 @@
 
       if(kullanici) {
         localStorage.setItem('aktifKullanici', JSON.stringify(kullanici));
-        oturumAç(kullanici.kullaniciAdi);
+        oturumAç(kullanici);
       } else {
         mesajGoster("Kullanıcı adı veya şifre hatalı!", "error");
       }
     }
 
-    function oturumAç(kullaniciAdi) {
-      document.getElementById('tab-container').classList.add('hidden');
-      document.getElementById('login-form').classList.add('hidden');
-      document.getElementById('register-form').classList.add('hidden');
-      document.getElementById('dashboard-form').classList.remove('hidden');
-      document.getElementById('welcome-text').innerText = "Hoş Geldin, " + kullaniciAdi;
-      mesajTemizle();
+    function oturumAç(kullanici) {
+      aktifKullaniciData = kullanici;
+      mevcutSkor = kullanici.skor || 0;
+      
+      document.getElementById('auth-section').classList.add('hidden');
+      document.getElementById('game-section').classList.remove('hidden');
+      
+      document.getElementById('user-avatar').innerText = kullanici.avatar || '🦊';
+      document.getElementById('user-name').innerText = kullanici.kullaniciAdi;
+      document.getElementById('current-score').innerText = mevcutSkor;
+      
+      yeniSoruGetir();
     }
 
     function cikisYap() {
       localStorage.removeItem('aktifKullanici');
-      document.getElementById('dashboard-form').classList.add('hidden');
-      document.getElementById('tab-container').classList.remove('hidden');
+      document.getElementById('game-section').classList.add('hidden');
+      document.getElementById('auth-section').classList.remove('hidden');
       sekmeDegistir('login');
       mesajGoster("Çıkış yapıldı.", "success");
+    }
+
+    function yeniSoruGetir() {
+      const gameMsg = document.getElementById('game-msg');
+      gameMsg.className = "message";
+      gameMsg.innerText = "";
+
+      const rastgeleIndex = Math.floor(Math.random() * kelimeler.length);
+      mevcutSoru = kelimeler[rastgeleIndex];
+
+      document.getElementById('target-word').innerText = mevcutSoru.ing;
+
+      let secenekler = [...mevcutSoru.yanlislar, mevcutSoru.tr];
+      secenekler.sort(() => Math.random() - 0.5); // Karıştır
+
+      const container = document.getElementById('options-container');
+      container.innerHTML = "";
+
+      secenekler.forEach(secenek => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = secenek;
+        btn.onclick = () => cevapKontrol(secenek);
+        container.appendChild(btn);
+      });
+    }
+
+    function cevapKontrol(secilenCevap) {
+      const gameMsg = document.getElementById('game-msg');
+      if(secilenCevap === mevcutSoru.tr) {
+        mevcutSkor += 10;
+        document.getElementById('current-score').innerText = mevcutSkor;
+        gameMsg.innerText = "Tebrikler! Doğru Cevap 🎉 (+10 Puan)";
+        gameMsg.className = "message success";
+        setTimeout(yeniSoruGetir, 1200);
+      } else {
+        gameMsg.innerText = "Yanlış Cevap! Tekrar Deneyin ❌";
+        gameMsg.className = "message error";
+      }
     }
 
     function mesajGoster(metin, tip) {
