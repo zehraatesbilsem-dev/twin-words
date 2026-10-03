@@ -66,7 +66,7 @@
     .option-btn:hover:not(:disabled) { background: #334155; border-color: #3b82f6; }
     .option-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #1e293b; }
     
-    .jokers-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 5px; }
+    .jokers-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
     .joker-btn { background: #1e1b4b; border: 1px solid #4338ca; color: #a5b4fc; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .joker-btn:hover:not(:disabled) { background: #312e81; color: white; }
     .joker-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #1e293b; color: #64748b; }
@@ -74,7 +74,7 @@
     .option-btn.correct-highlight { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; font-weight: bold; }
     .option-btn.wrong-highlight { background: #7f1d1d !important; border-color: #ef4444 !important; color: #f87171 !important; }
 
-    /* Personal Interactive Dictionary Updates */
+    /* Personal Interactive Dictionary */
     .dictionary-card { max-width: 900px; padding: 30px; }
     .dict-list { display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; text-align: left; margin-top: 15px; padding-right: 8px; }
     .dict-card { background: #0f172a; border: 1px solid #1e293b; padding: 12px 18px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -82,12 +82,15 @@
     .dict-center { display: flex; align-items: center; gap: 6px; width: 42%; }
     .dict-note-input { background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; padding: 8px 10px; font-size: 13px; width: 100%; outline: none; }
     .dict-note-input:focus { border-color: #3b82f6; }
-    .dict-save-btn { background: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+    .dict-save-btn { background: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; white-space: nowrap; }
     .dict-save-btn:hover { background: #1d4ed8; }
     .dict-word { font-size: 18px; font-weight: 800; color: #38bdf8; }
     .dict-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 30%; }
     .dict-label { font-size: 12px; color: #94a3b8; font-weight: 600; }
     .dict-tag { background: #064e3b; color: #34d399; font-size: 13px; padding: 5px 10px; border-radius: 6px; font-weight: 700; border: 1px solid #10b981; }
+
+    /* Hint Box inside Game */
+    .hint-box { background: #312e81; color: #fef08a; border: 1px dashed #eab308; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-top: 10px; text-align: center; }
 
     .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; margin-top: 10px; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
@@ -200,7 +203,10 @@
     <div class="jokers-container">
       <button id="joker-5050" class="joker-btn">🎭 50/50 Joker</button>
       <button id="joker-time" class="joker-btn">⏳ +10s Time</button>
+      <button id="joker-hint" class="joker-btn">💡 Hint (<span id="hint-count">3</span>/3)</button>
     </div>
+
+    <div id="hint-display-box" class="hint-box hidden"></div>
 
     <div id="review-banner" class="review-banner hidden">
       💡 REDEMPTION ROUND: Answer words you got wrong for +5 Pts each!
@@ -279,6 +285,7 @@
     let comboCount = 0;
     let fiftyFiftyUsed = false;
     let extraTimeUsed = false;
+    let hintLives = 3;
 
     // Word Pool
     const wordDatabase = {
@@ -582,7 +589,7 @@
       };
     });
 
-    // --- INTERACTIVE PERSONAL DICTIONARY ---
+    // --- INTERACTIVE PERSONAL DICTIONARY (ENGLISH UI) ---
     function renderDictionary() {
       const container = document.getElementById('dictionary-list');
       const searchVal = document.getElementById('dict-search').value.toLowerCase().trim();
@@ -616,8 +623,8 @@
             <span class="badge">${item.level}</span>
           </div>
           <div class="dict-center">
-            <input type="text" class="dict-note-input" id="note-input-${item.word}" value="${item.userNote}" placeholder="Kendi anlamını / notunu yaz...">
-            <button class="dict-save-btn" onclick="saveWordNote('${item.word}')">💾 Kaydet</button>
+            <input type="text" class="dict-note-input" id="note-input-${item.word}" value="${item.userNote}" placeholder="Type your note/meaning...">
+            <button class="dict-save-btn" onclick="saveWordNote('${item.word}')">💾 Save</button>
           </div>
           <div class="dict-right">
             <span class="dict-label">Synonym:</span>
@@ -635,7 +642,7 @@
       if (inputEl) {
         const val = inputEl.value.trim();
         saveNote(wordKey, val);
-        alert(`"${wordKey}" kelimesi için notun kaydedildi! ✅`);
+        alert(`Note for "${wordKey}" saved successfully! ✅`);
       }
     };
 
@@ -652,9 +659,14 @@
       comboCount = 0;
       fiftyFiftyUsed = false;
       extraTimeUsed = false;
+      hintLives = 3;
 
       document.getElementById('joker-5050').disabled = false;
       document.getElementById('joker-time').disabled = false;
+      document.getElementById('joker-hint').disabled = false;
+      document.getElementById('hint-count').innerText = hintLives;
+      document.getElementById('hint-display-box').classList.add('hidden');
+
       document.getElementById('review-banner').classList.add('hidden');
       document.getElementById('combo-banner').classList.add('hidden');
       document.getElementById('game-play-area').classList.remove('hidden');
@@ -684,6 +696,7 @@
     function nextQuestion() {
       canAnswer = true;
       document.getElementById('game-msg').className = "message";
+      document.getElementById('hint-display-box').classList.add('hidden');
 
       if(isReviewMode) {
         if(wrongWordsHistory.length === 0) {
@@ -800,6 +813,29 @@
       document.getElementById('timer-display').innerText = timeLeft + "s";
     };
 
+    // Hint Joker Logic (Lamp Emoji)
+    document.getElementById('joker-hint').onclick = () => {
+      if(hintLives <= 0 || !currentQuestion) return;
+
+      hintLives--;
+      document.getElementById('hint-count').innerText = hintLives;
+
+      if(hintLives === 0) {
+        document.getElementById('joker-hint').disabled = true;
+      }
+
+      const note = getSavedNote(currentQuestion.word);
+      const hintBox = document.getElementById('hint-display-box');
+
+      if (note && note.trim() !== '') {
+        hintBox.innerText = `💡 Your Note: "${note}"`;
+      } else {
+        hintBox.innerText = `💡 No custom note saved for "${currentQuestion.word}" yet!`;
+      }
+
+      hintBox.classList.remove('hidden');
+    };
+
     function startReviewMode() {
       if(wrongWordsHistory.length === 0) {
         finishGame();
@@ -808,6 +844,7 @@
       isReviewMode = true;
       document.getElementById('joker-5050').disabled = true;
       document.getElementById('joker-time').disabled = true;
+      document.getElementById('joker-hint').disabled = true;
       document.getElementById('combo-banner').classList.add('hidden');
       document.getElementById('review-banner').classList.remove('hidden');
       document.getElementById('timer-display').innerText = "OFF";
