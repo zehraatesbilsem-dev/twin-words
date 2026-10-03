@@ -66,7 +66,7 @@
     .option-btn.correct-highlight { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; font-weight: bold; }
     .option-btn.wrong-highlight { background: #7f1d1d !important; border-color: #ef4444 !important; color: #f87171 !important; }
 
-    .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; }
+    .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; margin-top: 10px; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
     .message.success { background: #064e3b; color: #34d399; display: block; }
 
@@ -162,7 +162,7 @@
 
     <div id="game-play-area">
       <div class="word-box">
-        <p style="color: #64748b; font-size: 12px; margin-bottom: 5px;">Choose the correct synonym or translation:</p>
+        <p style="color: #64748b; font-size: 12px; margin-bottom: 5px;">Choose the correct synonym:</p>
         <div id="target-word" class="target-word">Start</div>
       </div>
 
@@ -200,7 +200,6 @@
       onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Firebase Bilgilerin
     const firebaseConfig = {
       apiKey: "AIzaSyBUNGKkVKIGxTaQ69pvVgIFJAWJbUVtutk",
       authDomain: "twin-words-a9228.firebaseapp.com",
@@ -416,6 +415,7 @@
     document.getElementById('btn-reg-tab').onclick = () => switchTab('register');
 
     function switchTab(target) {
+      document.getElementById('msg').className = "message";
       if(target === 'login') {
         document.getElementById('login-form').classList.remove('hidden');
         document.getElementById('register-form').classList.add('hidden');
@@ -456,7 +456,11 @@
         });
         showMessage("Account created successfully!", "success");
       } catch (err) {
-        showMessage(err.message, "error");
+        if (err.code === 'auth/configuration-not-found') {
+          showMessage("Lütfen Firebase Console'da Email/Password özelliğini açın!", "error");
+        } else {
+          showMessage(err.message, "error");
+        }
       }
     };
 
@@ -470,7 +474,11 @@
       try {
         await signInWithEmailAndPassword(auth, email, password);
       } catch (err) {
-        showMessage("Invalid credentials!", "error");
+        if (err.code === 'auth/configuration-not-found') {
+          showMessage("Lütfen Firebase Console'da Email/Password özelliğini açın!", "error");
+        } else {
+          showMessage("Invalid email or password!", "error");
+        }
       }
     };
 
