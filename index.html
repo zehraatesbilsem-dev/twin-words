@@ -48,7 +48,7 @@
     /* Game Panel */
     .game-card { background: #151d2a; border: 1px solid #1e293b; border-radius: 16px; padding: 25px; width: 100%; max-width: 650px; text-align: center; display: flex; flex-direction: column; gap: 20px; }
     .game-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 15px; }
-    .user-badge { font-weight: bold; font-size: 16px; color: #3b82f6; display: flex; align-items: center; gap: 8px; }
+    .user-badge { font-weight: bold; font-size: 18px; color: #3b82f6; display: flex; align-items: center; gap: 8px; }
     
     .stats-bar { display: flex; justify-content: space-around; background: #0f172a; padding: 12px; border-radius: 10px; border: 1px solid #1e293b; }
     .stat-box { font-weight: bold; font-size: 15px; }
@@ -74,13 +74,15 @@
     .option-btn.correct-highlight { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; font-weight: bold; }
     .option-btn.wrong-highlight { background: #7f1d1d !important; border-color: #ef4444 !important; color: #f87171 !important; }
 
-    /* Dictionary Section */
-    .dict-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; text-align: left; margin-top: 10px; padding-right: 5px; }
-    .dict-card { background: #0f172a; border: 1px solid #1e293b; padding: 12px 16px; border-radius: 10px; }
-    .dict-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .dict-word { font-size: 18px; font-weight: bold; color: #38bdf8; }
-    .dict-syns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-    .dict-tag { background: #064e3b; color: #34d399; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+    /* Enlarged & Updated Synonym Dictionary */
+    .dictionary-card { max-width: 800px; padding: 30px; }
+    .dict-list { display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; text-align: left; margin-top: 15px; padding-right: 8px; }
+    .dict-card { background: #0f172a; border: 1px solid #1e293b; padding: 16px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .dict-left { display: flex; align-items: center; gap: 12px; }
+    .dict-word { font-size: 20px; font-weight: 800; color: #38bdf8; }
+    .dict-right { display: flex; align-items: center; gap: 10px; }
+    .dict-label { font-size: 13px; color: #94a3b8; font-weight: 600; }
+    .dict-tag { background: #064e3b; color: #34d399; font-size: 14px; padding: 6px 14px; border-radius: 6px; font-weight: 700; border: 1px solid #10b981; }
 
     .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; margin-top: 10px; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
@@ -152,13 +154,13 @@
     </div>
   </div>
 
-  <!-- DICTIONARY SECTION -->
-  <div id="dictionary-section" class="game-card hidden">
+  <!-- DICTIONARY SECTION (BÜYÜTÜLDÜ VE DÜZENLENDİ) -->
+  <div id="dictionary-section" class="game-card dictionary-card hidden">
     <div class="game-header">
       <div class="user-badge">📖 Synonym Dictionary</div>
       <button class="btn-back" id="btn-dict-back">⬅️ Main Menu</button>
     </div>
-    <input type="text" id="dict-search" class="input-field" placeholder="Search word or synonym..." oninput="filterDictionary()">
+    <input type="text" id="dict-search" class="input-field" style="font-size: 16px; padding: 14px;" placeholder="Search target word or synonym..." oninput="filterDictionary()">
     <div id="dictionary-list" class="dict-list"></div>
   </div>
 
@@ -417,7 +419,6 @@
         if (docSnap.exists()) {
           currentUserDoc = { uid: user.uid, ...docSnap.data() };
           
-          // Update User Info Labels
           const avatar = currentUserDoc.avatar || '🦊';
           const name = currentUserDoc.username || 'Player';
           
@@ -426,7 +427,6 @@
           document.getElementById('menu-user-avatar').innerText = avatar;
           document.getElementById('menu-user-name').innerText = name;
 
-          // Direct to Main Menu instead of immediate game start
           showSection('main-menu-section');
         }
       } else {
@@ -568,7 +568,7 @@
       };
     });
 
-    // Dictionary Functionality
+    // --- UPDATED DICTIONARY FUNCTIONALITY (TÜM KELİMELER + İNGİLİZCE + YAN YANA DUZEN) ---
     function renderDictionary() {
       const container = document.getElementById('dictionary-list');
       const searchVal = document.getElementById('dict-search').value.toLowerCase().trim();
@@ -587,7 +587,7 @@
       );
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div style="color:#64748b; font-size:13px; text-align:center;">No words found.</div>`;
+        container.innerHTML = `<div style="color:#64748b; font-size:14px; text-align:center; padding: 20px;">No matching words found.</div>`;
         return;
       }
 
@@ -595,12 +595,13 @@
         const card = document.createElement('div');
         card.className = 'dict-card';
         card.innerHTML = `
-          <div class="dict-header">
+          <div class="dict-left">
             <span class="dict-word">${item.word}</span>
             <span class="badge">${item.level}</span>
           </div>
-          <div class="dict-syns">
-            <span class="dict-tag">Eş Anlam: ${item.correct}</span>
+          <div class="dict-right">
+            <span class="dict-label">Synonym:</span>
+            <span class="dict-tag">${item.correct}</span>
           </div>
         `;
         container.appendChild(card);
@@ -630,7 +631,7 @@
       document.getElementById('game-play-area').classList.remove('hidden');
       document.getElementById('game-over-area').classList.add('hidden');
       document.getElementById('current-score').innerText = currentScore;
-      document.getElementById('lives-display').innerText = "❤️".repeat(lives);
+      document.getElementById('lives-display').innerText = "❤️️".repeat(lives);
       document.getElementById('timer-display').innerText = timeLeft + "s";
       document.getElementById('game-msg').className = "message";
 
