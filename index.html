@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twin Words - Firebase Powered</title>
+  <title>Twin Words - SpeakShift</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #0b0f19; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
@@ -20,7 +20,7 @@
     .badge { background: #3b82f6; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
     .points { color: #818cf8; font-weight: bold; font-size: 15px; }
     
-    /* Auth Form */
+    /* Auth & Menu Card */
     .auth-card { background: #151d2a; border: 1px solid #1e293b; border-radius: 16px; padding: 35px 30px; flex: 1.3; min-width: 280px; display: flex; flex-direction: column; align-items: center; }
     .tabs { display: flex; width: 100%; margin-bottom: 25px; border-bottom: 2px solid #1e293b; }
     .tab-btn { flex: 1; padding: 10px; background: none; border: none; outline: none; cursor: pointer; font-size: 16px; font-weight: bold; color: #64748b; transition: 0.2s; }
@@ -30,6 +30,14 @@
     .input-field:focus { border-color: #3b82f6; }
     .btn-submit { width: 100%; padding: 12px; background: #3730a3; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 5px; }
     .btn-submit:hover { background: #4338ca; }
+    
+    /* Main Menu Buttons */
+    .menu-box { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+    .btn-menu { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
+    .btn-menu-primary { background: #2563eb; }
+    .btn-menu-primary:hover { background: #1d4ed8; }
+    .btn-menu-secondary { background: #059669; }
+    .btn-menu-secondary:hover { background: #047857; }
     
     /* Avatar List */
     .avatar-title { font-size: 11px; font-weight: bold; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; text-align: center; }
@@ -66,11 +74,20 @@
     .option-btn.correct-highlight { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; font-weight: bold; }
     .option-btn.wrong-highlight { background: #7f1d1d !important; border-color: #ef4444 !important; color: #f87171 !important; }
 
+    /* Dictionary Section */
+    .dict-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; text-align: left; margin-top: 10px; padding-right: 5px; }
+    .dict-card { background: #0f172a; border: 1px solid #1e293b; padding: 12px 16px; border-radius: 10px; }
+    .dict-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .dict-word { font-size: 18px; font-weight: bold; color: #38bdf8; }
+    .dict-syns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .dict-tag { background: #064e3b; color: #34d399; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+
     .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; margin-top: 10px; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
     .message.success { background: #064e3b; color: #34d399; display: block; }
 
     .btn-logout { background: #7f1d1d; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+    .btn-back { background: #334155; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
     .btn-restart { background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; width: 100%; }
 
     .review-banner { background: #312e81; color: #c7d2fe; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; border: 1px solid #4338ca; }
@@ -119,6 +136,32 @@
     </div>
   </div>
 
+  <!-- MAIN MENU SECTION -->
+  <div id="main-menu-section" class="game-card hidden">
+    <div class="game-header">
+      <div class="user-badge">
+        <span id="menu-user-avatar">🦊</span>
+        <span id="menu-user-name">Player</span>
+      </div>
+      <button class="btn-logout" id="btn-menu-logout">Log Out</button>
+    </div>
+    <div class="menu-box">
+      <h2 style="margin-bottom: 10px; color: #94a3b8;">Main Menu</h2>
+      <button id="btn-nav-game" class="btn-menu btn-menu-primary">🎮 Start Quiz Game</button>
+      <button id="btn-nav-dict" class="btn-menu btn-menu-secondary">📖 Synonym Dictionary</button>
+    </div>
+  </div>
+
+  <!-- DICTIONARY SECTION -->
+  <div id="dictionary-section" class="game-card hidden">
+    <div class="game-header">
+      <div class="user-badge">📖 Synonym Dictionary</div>
+      <button class="btn-back" id="btn-dict-back">⬅️ Main Menu</button>
+    </div>
+    <input type="text" id="dict-search" class="input-field" placeholder="Search word or synonym..." oninput="filterDictionary()">
+    <div id="dictionary-list" class="dict-list"></div>
+  </div>
+
   <!-- GAME SECTION -->
   <div id="game-section" class="game-card hidden">
     <div class="game-header">
@@ -126,7 +169,7 @@
         <span id="user-avatar">🦊</span>
         <span id="user-name">Player</span>
       </div>
-      <button class="btn-logout" id="btn-logout">Log Out</button>
+      <button class="btn-back" id="btn-game-back">⬅️ Main Menu</button>
     </div>
 
     <div>
@@ -230,6 +273,7 @@
     let fiftyFiftyUsed = false;
     let extraTimeUsed = false;
 
+    // Word Pool with Levels and Synonyms
     const wordDatabase = {
       A1: [
         { word: "Start", correct: "Begin", wrong: ["End", "Finish", "Stop"] },
@@ -372,16 +416,22 @@
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           currentUserDoc = { uid: user.uid, ...docSnap.data() };
-          document.getElementById('user-avatar').innerText = currentUserDoc.avatar || '🦊';
-          document.getElementById('user-name').innerText = currentUserDoc.username || 'Player';
-          document.getElementById('auth-section').classList.add('hidden');
-          document.getElementById('game-section').classList.remove('hidden');
-          restartGame();
+          
+          // Update User Info Labels
+          const avatar = currentUserDoc.avatar || '🦊';
+          const name = currentUserDoc.username || 'Player';
+          
+          document.getElementById('user-avatar').innerText = avatar;
+          document.getElementById('user-name').innerText = name;
+          document.getElementById('menu-user-avatar').innerText = avatar;
+          document.getElementById('menu-user-name').innerText = name;
+
+          // Direct to Main Menu instead of immediate game start
+          showSection('main-menu-section');
         }
       } else {
         currentUserDoc = null;
-        document.getElementById('game-section').classList.add('hidden');
-        document.getElementById('auth-section').classList.remove('hidden');
+        showSection('auth-section');
       }
     });
 
@@ -410,7 +460,34 @@
       }).join('');
     });
 
-    // Event Handlers
+    // Navigation Helper
+    function showSection(sectionId) {
+      document.getElementById('auth-section').classList.add('hidden');
+      document.getElementById('main-menu-section').classList.add('hidden');
+      document.getElementById('dictionary-section').classList.add('hidden');
+      document.getElementById('game-section').classList.add('hidden');
+
+      document.getElementById(sectionId).classList.remove('hidden');
+    }
+
+    // Navigation Events
+    document.getElementById('btn-nav-game').onclick = () => {
+      showSection('game-section');
+      restartGame();
+    };
+
+    document.getElementById('btn-nav-dict').onclick = () => {
+      showSection('dictionary-section');
+      renderDictionary();
+    };
+
+    document.getElementById('btn-dict-back').onclick = () => showSection('main-menu-section');
+    document.getElementById('btn-game-back').onclick = () => {
+      clearInterval(timerInterval);
+      showSection('main-menu-section');
+    };
+
+    // Event Handlers for Auth Tabs
     document.getElementById('btn-login-tab').onclick = () => switchTab('login');
     document.getElementById('btn-reg-tab').onclick = () => switchTab('register');
 
@@ -456,11 +533,7 @@
         });
         showMessage("Account created successfully!", "success");
       } catch (err) {
-        if (err.code === 'auth/configuration-not-found') {
-          showMessage("Lütfen Firebase Console'da Email/Password özelliğini açın!", "error");
-        } else {
-          showMessage(err.message, "error");
-        }
+        showMessage(err.message, "error");
       }
     };
 
@@ -474,19 +547,16 @@
       try {
         await signInWithEmailAndPassword(auth, email, password);
       } catch (err) {
-        if (err.code === 'auth/configuration-not-found') {
-          showMessage("Lütfen Firebase Console'da Email/Password özelliğini açın!", "error");
-        } else {
-          showMessage("Invalid email or password!", "error");
-        }
+        showMessage("Invalid email or password!", "error");
       }
     };
 
     // Logout
-    document.getElementById('btn-logout').onclick = () => {
+    const logoutHandler = () => {
       clearInterval(timerInterval);
       signOut(auth);
     };
+    document.getElementById('btn-menu-logout').onclick = logoutHandler;
 
     // Level Selection
     document.querySelectorAll('.level-btn').forEach(btn => {
@@ -497,6 +567,47 @@
         restartGame();
       };
     });
+
+    // Dictionary Functionality
+    function renderDictionary() {
+      const container = document.getElementById('dictionary-list');
+      const searchVal = document.getElementById('dict-search').value.toLowerCase().trim();
+      container.innerHTML = '';
+
+      let allWords = [];
+      Object.keys(wordDatabase).forEach(lvl => {
+        wordDatabase[lvl].forEach(item => {
+          allWords.push({ ...item, level: lvl });
+        });
+      });
+
+      const filtered = allWords.filter(i => 
+        i.word.toLowerCase().includes(searchVal) || 
+        i.correct.toLowerCase().includes(searchVal)
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="color:#64748b; font-size:13px; text-align:center;">No words found.</div>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'dict-card';
+        card.innerHTML = `
+          <div class="dict-header">
+            <span class="dict-word">${item.word}</span>
+            <span class="badge">${item.level}</span>
+          </div>
+          <div class="dict-syns">
+            <span class="dict-tag">Eş Anlam: ${item.correct}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    window.filterDictionary = renderDictionary;
 
     // Game Logic
     function restartGame() {
