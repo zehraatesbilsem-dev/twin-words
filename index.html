@@ -74,17 +74,20 @@
     .option-btn.correct-highlight { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; font-weight: bold; }
     .option-btn.wrong-highlight { background: #7f1d1d !important; border-color: #ef4444 !important; color: #f87171 !important; }
 
-    /* Visual Synonym Dictionary Updates */
-    .dictionary-card { max-width: 850px; padding: 30px; }
+    /* Personal Interactive Dictionary Updates */
+    .dictionary-card { max-width: 900px; padding: 30px; }
     .dict-list { display: flex; flex-direction: column; gap: 12px; max-height: 480px; overflow-y: auto; text-align: left; margin-top: 15px; padding-right: 8px; }
-    .dict-card { background: #0f172a; border: 1px solid #1e293b; padding: 14px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .dict-left { display: flex; align-items: center; gap: 12px; width: 30%; }
-    .dict-center { display: flex; align-items: center; justify-content: center; width: 30%; font-size: 26px; }
-    .dict-icon-box { background: #1e293b; padding: 6px 14px; border-radius: 20px; border: 1px solid #334155; display: flex; align-items: center; gap: 6px; }
-    .dict-word { font-size: 20px; font-weight: 800; color: #38bdf8; }
-    .dict-right { display: flex; align-items: center; justify-content: flex-end; gap: 10px; width: 40%; }
-    .dict-label { font-size: 13px; color: #94a3b8; font-weight: 600; }
-    .dict-tag { background: #064e3b; color: #34d399; font-size: 14px; padding: 6px 14px; border-radius: 6px; font-weight: 700; border: 1px solid #10b981; }
+    .dict-card { background: #0f172a; border: 1px solid #1e293b; padding: 12px 18px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .dict-left { display: flex; align-items: center; gap: 10px; width: 28%; }
+    .dict-center { display: flex; align-items: center; gap: 6px; width: 42%; }
+    .dict-note-input { background: #1e293b; border: 1px solid #334155; border-radius: 6px; color: #f1f5f9; padding: 8px 10px; font-size: 13px; width: 100%; outline: none; }
+    .dict-note-input:focus { border-color: #3b82f6; }
+    .dict-save-btn { background: #2563eb; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+    .dict-save-btn:hover { background: #1d4ed8; }
+    .dict-word { font-size: 18px; font-weight: 800; color: #38bdf8; }
+    .dict-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 30%; }
+    .dict-label { font-size: 12px; color: #94a3b8; font-weight: 600; }
+    .dict-tag { background: #064e3b; color: #34d399; font-size: 13px; padding: 5px 10px; border-radius: 6px; font-weight: 700; border: 1px solid #10b981; }
 
     .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; margin-top: 10px; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
@@ -152,17 +155,17 @@
     <div class="menu-box">
       <h2 style="margin-bottom: 10px; color: #94a3b8;">Main Menu</h2>
       <button id="btn-nav-game" class="btn-menu btn-menu-primary">🎮 Start Quiz Game</button>
-      <button id="btn-nav-dict" class="btn-menu btn-menu-secondary">📖 Visual Synonym Dictionary</button>
+      <button id="btn-nav-dict" class="btn-menu btn-menu-secondary">📖 Personal Interactive Dictionary</button>
     </div>
   </div>
 
   <!-- DICTIONARY SECTION -->
   <div id="dictionary-section" class="game-card dictionary-card hidden">
     <div class="game-header">
-      <div class="user-badge">📖 Visual Synonym Dictionary</div>
+      <div class="user-badge">📖 Personal Dictionary</div>
       <button class="btn-back" id="btn-dict-back">⬅️ Main Menu</button>
     </div>
-    <input type="text" id="dict-search" class="input-field" style="font-size: 16px; padding: 14px;" placeholder="Search target word or synonym..." oninput="filterDictionary()">
+    <input type="text" id="dict-search" class="input-field" style="font-size: 15px; padding: 12px;" placeholder="Search target word, note, or synonym..." oninput="filterDictionary()">
     <div id="dictionary-list" class="dict-list"></div>
   </div>
 
@@ -277,141 +280,150 @@
     let fiftyFiftyUsed = false;
     let extraTimeUsed = false;
 
-    // Word Pool with Universal Visual Icons
+    // Word Pool
     const wordDatabase = {
       A1: [
-        { word: "Start", correct: "Begin", wrong: ["End", "Finish", "Stop"], icon: "🚀" },
-        { word: "Big", correct: "Large", wrong: ["Small", "Tiny", "Little"], icon: "🐘" },
-        { word: "Happy", correct: "Glad", wrong: ["Sad", "Angry", "Upset"], icon: "😄" },
-        { word: "Fast", correct: "Quick", wrong: ["Slow", "Late", "Heavy"], icon: "⚡" },
-        { word: "Small", correct: "Little", wrong: ["Huge", "Tall", "Wide"], icon: "🐥" },
-        { word: "Quiet", correct: "Silent", wrong: ["Loud", "Noisy", "Bright"], icon: "🤫" },
-        { word: "Smart", correct: "Clever", wrong: ["Lazy", "Slow", "Silly"], icon: "🧠" },
-        { word: "Buy", correct: "Purchase", wrong: ["Sell", "Give", "Take"], icon: "🛒" },
-        { word: "Hard", correct: "Difficult", wrong: ["Easy", "Soft", "Simple"], icon: "🪨" },
-        { word: "Correct", correct: "Right", wrong: ["Wrong", "False", "Bad"], icon: "✅" },
-        { word: "Gift", correct: "Present", wrong: ["Debt", "Price", "Cost"], icon: "🎁" },
-        { word: "Help", correct: "Assist", wrong: ["Hurt", "Stop", "Block"], icon: "🤝" },
-        { word: "Simple", correct: "Easy", wrong: ["Hard", "Tough", "Complex"], icon: "🧩" },
-        { word: "Sad", correct: "Unhappy", wrong: ["Cheerful", "Brave", "Kind"], icon: "😢" },
-        { word: "Rich", correct: "Wealthy", wrong: ["Poor", "Weak", "Sick"], icon: "💎" },
-        { word: "Trip", correct: "Journey", wrong: ["Home", "Stay", "Rest"], icon: "✈️" },
-        { word: "Sick", correct: "Ill", wrong: ["Healthy", "Strong", "Fit"], icon: "🤒" },
-        { word: "Speak", correct: "Talk", wrong: ["Listen", "Mute", "Read"], icon: "🗣️" },
-        { word: "Select", correct: "Choose", wrong: ["Drop", "Reject", "Lose"], icon: "👈" },
-        { word: "Safe", correct: "Secure", wrong: ["Risky", "Harmful", "Danger"], icon: "🛡️" }
+        { word: "Start", correct: "Begin", wrong: ["End", "Finish", "Stop"] },
+        { word: "Big", correct: "Large", wrong: ["Small", "Tiny", "Little"] },
+        { word: "Happy", correct: "Glad", wrong: ["Sad", "Angry", "Upset"] },
+        { word: "Fast", correct: "Quick", wrong: ["Slow", "Late", "Heavy"] },
+        { word: "Small", correct: "Little", wrong: ["Huge", "Tall", "Wide"] },
+        { word: "Quiet", correct: "Silent", wrong: ["Loud", "Noisy", "Bright"] },
+        { word: "Smart", correct: "Clever", wrong: ["Lazy", "Slow", "Silly"] },
+        { word: "Buy", correct: "Purchase", wrong: ["Sell", "Give", "Take"] },
+        { word: "Hard", correct: "Difficult", wrong: ["Easy", "Soft", "Simple"] },
+        { word: "Correct", correct: "Right", wrong: ["Wrong", "False", "Bad"] },
+        { word: "Gift", correct: "Present", wrong: ["Debt", "Price", "Cost"] },
+        { word: "Help", correct: "Assist", wrong: ["Hurt", "Stop", "Block"] },
+        { word: "Simple", correct: "Easy", wrong: ["Hard", "Tough", "Complex"] },
+        { word: "Sad", correct: "Unhappy", wrong: ["Cheerful", "Brave", "Kind"] },
+        { word: "Rich", correct: "Wealthy", wrong: ["Poor", "Weak", "Sick"] },
+        { word: "Trip", correct: "Journey", wrong: ["Home", "Stay", "Rest"] },
+        { word: "Sick", correct: "Ill", wrong: ["Healthy", "Strong", "Fit"] },
+        { word: "Speak", correct: "Talk", wrong: ["Listen", "Mute", "Read"] },
+        { word: "Select", correct: "Choose", wrong: ["Drop", "Reject", "Lose"] },
+        { word: "Safe", correct: "Secure", wrong: ["Risky", "Harmful", "Danger"] }
       ],
       A2: [
-        { word: "Brave", correct: "Courageous", wrong: ["Scared", "Afraid", "Timid"], icon: "🦁" },
-        { word: "Calm", correct: "Peaceful", wrong: ["Angry", "Wild", "Loud"], icon: "🕊️" },
-        { word: "Famous", correct: "Well-known", wrong: ["Secret", "Unknown", "Hidden"], icon: "🌟" },
-        { word: "Huge", correct: "Enormous", wrong: ["Tiny", "Small", "Mini"], icon: "🏰" },
-        { word: "Polite", correct: "Courteous", wrong: ["Rude", "Impolite", "Harsh"], icon: "🎩" },
-        { word: "Rare", correct: "Uncommon", wrong: ["Usual", "Frequent", "Common"], icon: "🦄" },
-        { word: "Wise", correct: "Smart", wrong: ["Foolish", "Silly", "Rash"], icon: "🦉" },
-        { word: "Allow", correct: "Permit", wrong: ["Ban", "Forbid", "Deny"], icon: "🔓" },
-        { word: "Protect", correct: "Defend", wrong: ["Attack", "Harm", "Destroy"], icon: "🛡️" },
-        { word: "Reduce", correct: "Decrease", wrong: ["Increase", "Grow", "Raise"], icon: "📉" },
-        { word: "Refuse", correct: "Decline", wrong: ["Accept", "Agree", "Grant"], icon: "🚫" },
-        { word: "Succeed", correct: "Achieve", wrong: ["Fail", "Lose", "Quit"], icon: "🏆" },
-        { word: "Vanish", correct: "Disappear", wrong: ["Appear", "Arrive", "Stay"], icon: "👻" },
-        { word: "Brief", correct: "Short", wrong: ["Long", "Huge", "Endless"], icon: "⏱️" },
-        { word: "Pardon", correct: "Forgive", wrong: ["Blame", "Punish", "Hate"], icon: "🕊️" },
-        { word: "Neat", correct: "Tidy", wrong: ["Messy", "Dirty", "Random"], icon: "🧹" },
-        { word: "Annual", correct: "Yearly", wrong: ["Daily", "Weekly", "Monthly"], icon: "📅" },
-        { word: "Gather", correct: "Collect", wrong: ["Scatter", "Divide", "Drop"], icon: "🧺" },
-        { word: "Goal", correct: "Target", wrong: ["Start", "Past", "Mistake"], icon: "🎯" },
-        { word: "Damage", correct: "Harm", wrong: ["Fix", "Heal", "Repair"], icon: "💥" }
+        { word: "Brave", correct: "Courageous", wrong: ["Scared", "Afraid", "Timid"] },
+        { word: "Calm", correct: "Peaceful", wrong: ["Angry", "Wild", "Loud"] },
+        { word: "Famous", correct: "Well-known", wrong: ["Secret", "Unknown", "Hidden"] },
+        { word: "Huge", correct: "Enormous", wrong: ["Tiny", "Small", "Mini"] },
+        { word: "Polite", correct: "Courteous", wrong: ["Rude", "Impolite", "Harsh"] },
+        { word: "Rare", correct: "Uncommon", wrong: ["Usual", "Frequent", "Common"] },
+        { word: "Wise", correct: "Smart", wrong: ["Foolish", "Silly", "Rash"] },
+        { word: "Allow", correct: "Permit", wrong: ["Ban", "Forbid", "Deny"] },
+        { word: "Protect", correct: "Defend", wrong: ["Attack", "Harm", "Destroy"] },
+        { word: "Reduce", correct: "Decrease", wrong: ["Increase", "Grow", "Raise"] },
+        { word: "Refuse", correct: "Decline", wrong: ["Accept", "Agree", "Grant"] },
+        { word: "Succeed", correct: "Achieve", wrong: ["Fail", "Lose", "Quit"] },
+        { word: "Vanish", correct: "Disappear", wrong: ["Appear", "Arrive", "Stay"] },
+        { word: "Brief", correct: "Short", wrong: ["Long", "Huge", "Endless"] },
+        { word: "Pardon", correct: "Forgive", wrong: ["Blame", "Punish", "Hate"] },
+        { word: "Neat", correct: "Tidy", wrong: ["Messy", "Dirty", "Random"] },
+        { word: "Annual", correct: "Yearly", wrong: ["Daily", "Weekly", "Monthly"] },
+        { word: "Gather", correct: "Collect", wrong: ["Scatter", "Divide", "Drop"] },
+        { word: "Goal", correct: "Target", wrong: ["Start", "Past", "Mistake"] },
+        { word: "Damage", correct: "Harm", wrong: ["Fix", "Heal", "Repair"] }
       ],
       B1: [
-        { word: "Accurate", correct: "Correct", wrong: ["Wrong", "False", "Rough"], icon: "🎯" },
-        { word: "Adequate", correct: "Sufficient", wrong: ["Poor", "Lacking", "Few"], icon: "👍" },
-        { word: "Advantage", correct: "Benefit", wrong: ["Drawback", "Loss", "Harm"], icon: "📈" },
-        { word: "Clarify", correct: "Explain", wrong: ["Confuse", "Complicate", "Hide"], icon: "💡" },
-        { word: "Complicated", correct: "Complex", wrong: ["Simple", "Easy", "Direct"], icon: "🌀" },
-        { word: "Crucial", correct: "Vital", wrong: ["Minor", "Unimportant", "Slight"], icon: "⚠️" },
-        { word: "Demonstrate", correct: "Show", wrong: ["Hide", "Cover", "Mask"], icon: "📊" },
-        { word: "Efficient", correct: "Productive", wrong: ["Slow", "Wasteful", "Lazy"], icon: "⚙️" },
-        { word: "Hesitate", correct: "Pause", wrong: ["Rush", "Proceed", "Advance"], icon: "⏸️️" },
-        { word: "Influence", correct: "Impact", wrong: ["Ignore", "Result", "End"], icon: "🌊" },
-        { word: "Inquire", correct: "Ask", wrong: ["Answer", "Reply", "State"], icon: "❓" },
-        { word: "Obstacle", correct: "Barrier", wrong: ["Path", "Helper", "Way"], icon: "🚧" },
-        { word: "Permanent", correct: "Lasting", wrong: ["Temporary", "Short", "Brief"], icon: "♾️" },
-        { word: "Persuade", correct: "Convince", wrong: ["Force", "Block", "Stop"], icon: "💬" },
-        { word: "Potential", correct: "Possible", wrong: ["Certain", "Impossible", "Past"], icon: "🌱" },
-        { word: "Reluctant", correct: "Unwilling", wrong: ["Eager", "Ready", "Keen"], icon: "🤷" },
-        { word: "Sufficient", correct: "Enough", wrong: ["Lacking", "Few", "Scarce"], icon: "✅" },
-        { word: "Tolerate", correct: "Endure", wrong: ["Ban", "Reject", "Refuse"], icon: "🧘" },
-        { word: "Valid", correct: "Logical", wrong: ["False", "Invalid", "Fake"], icon: "✔️" },
-        { word: "Vague", correct: "Unclear", wrong: ["Sharp", "Exact", "Clear"], icon: "🌫️" }
+        { word: "Accurate", correct: "Correct", wrong: ["Wrong", "False", "Rough"] },
+        { word: "Adequate", correct: "Sufficient", wrong: ["Poor", "Lacking", "Few"] },
+        { word: "Advantage", correct: "Benefit", wrong: ["Drawback", "Loss", "Harm"] },
+        { word: "Clarify", correct: "Explain", wrong: ["Confuse", "Complicate", "Hide"] },
+        { word: "Complicated", correct: "Complex", wrong: ["Simple", "Easy", "Direct"] },
+        { word: "Crucial", correct: "Vital", wrong: ["Minor", "Unimportant", "Slight"] },
+        { word: "Demonstrate", correct: "Show", wrong: ["Hide", "Cover", "Mask"] },
+        { word: "Efficient", correct: "Productive", wrong: ["Slow", "Wasteful", "Lazy"] },
+        { word: "Hesitate", correct: "Pause", wrong: ["Rush", "Proceed", "Advance"] },
+        { word: "Influence", correct: "Impact", wrong: ["Ignore", "Result", "End"] },
+        { word: "Inquire", correct: "Ask", wrong: ["Answer", "Reply", "State"] },
+        { word: "Obstacle", correct: "Barrier", wrong: ["Path", "Helper", "Way"] },
+        { word: "Permanent", correct: "Lasting", wrong: ["Temporary", "Short", "Brief"] },
+        { word: "Persuade", correct: "Convince", wrong: ["Force", "Block", "Stop"] },
+        { word: "Potential", correct: "Possible", wrong: ["Certain", "Impossible", "Past"] },
+        { word: "Reluctant", correct: "Unwilling", wrong: ["Eager", "Ready", "Keen"] },
+        { word: "Sufficient", correct: "Enough", wrong: ["Lacking", "Few", "Scarce"] },
+        { word: "Tolerate", correct: "Endure", wrong: ["Ban", "Reject", "Refuse"] },
+        { word: "Valid", correct: "Logical", wrong: ["False", "Invalid", "Fake"] },
+        { word: "Vague", correct: "Unclear", wrong: ["Sharp", "Exact", "Clear"] }
       ],
       B2: [
-        { word: "Ambiguous", correct: "Unclear", wrong: ["Explicit", "Direct", "Clear"], icon: "❓" },
-        { word: "Comprehensive", correct: "Thorough", wrong: ["Limited", "Partial", "Narrow"], icon: "📚" },
-        { word: "Concise", correct: "Brief", wrong: ["Long", "Wordy", "Detailed"], icon: "📝" },
-        { word: "Feasible", correct: "Possible", wrong: ["Impossible", "Hard", "Unworkable"], icon: "🛠️" },
-        { word: "Impartial", correct: "Neutral", wrong: ["Biased", "Unfair", "Partial"], icon: "⚖️" },
-        { word: "Incentive", correct: "Motivation", wrong: ["Penalty", "Obstacle", "Deterrent"], icon: "🎁" },
-        { word: "Intricate", correct: "Complex", wrong: ["Simple", "Plain", "Direct"], icon: "🕸️" },
-        { word: "Lucrative", correct: "Profitable", wrong: ["Costly", "Poor", "Unprofitable"], icon: "💰" },
-        { word: "Pragmatic", correct: "Practical", wrong: ["Wild", "Idealistic", "Unrealistic"], icon: "📐" },
-        { word: "Refine", correct: "Improve", wrong: ["Damage", "Ruin", "Degrade"], icon: "✨" },
-        { word: "Rigid", correct: "Strict", wrong: ["Flexible", "Soft", "Bendy"], icon: "🧱" },
-        { word: "Subtle", correct: "Delicate", wrong: ["Loud", "Obvious", "Harsh"], icon: "🎨" },
-        { word: "Surpass", correct: "Exceed", wrong: ["Fail", "Drop", "Fall behind"], icon: "🚀" },
-        { word: "Tangible", correct: "Concrete", wrong: ["Virtual", "Abstract", "Ghostly"], icon: "🖐️" },
-        { word: "Versatile", correct: "Adaptable", wrong: ["Fixed", "Limited", "Rigid"], icon: "🔄" },
-        { word: "Vulnerable", correct: "Defenseless", wrong: ["Protected", "Safe", "Secure"], icon: "🐣" },
-        { word: "Wary", correct: "Cautious", wrong: ["Careless", "Rash", "Trusting"], icon: "🧐" },
-        { word: "Advocate", correct: "Support", wrong: ["Attack", "Oppose", "Deny"], icon: "📢" },
-        { word: "Foster", correct: "Encourage", wrong: ["Stop", "Block", "Suppress"], icon: "🌿" },
-        { word: "Mitigate", correct: "Reduce", wrong: ["Increase", "Hurt", "Intensify"], icon: "🧯" }
+        { word: "Ambiguous", correct: "Unclear", wrong: ["Explicit", "Direct", "Clear"] },
+        { word: "Comprehensive", correct: "Thorough", wrong: ["Limited", "Partial", "Narrow"] },
+        { word: "Concise", correct: "Brief", wrong: ["Long", "Wordy", "Detailed"] },
+        { word: "Feasible", correct: "Possible", wrong: ["Impossible", "Hard", "Unworkable"] },
+        { word: "Impartial", correct: "Neutral", wrong: ["Biased", "Unfair", "Partial"] },
+        { word: "Incentive", correct: "Motivation", wrong: ["Penalty", "Obstacle", "Deterrent"] },
+        { word: "Intricate", correct: "Complex", wrong: ["Simple", "Plain", "Direct"] },
+        { word: "Lucrative", correct: "Profitable", wrong: ["Costly", "Poor", "Unprofitable"] },
+        { word: "Pragmatic", correct: "Practical", wrong: ["Wild", "Idealistic", "Unrealistic"] },
+        { word: "Refine", correct: "Improve", wrong: ["Damage", "Ruin", "Degrade"] },
+        { word: "Rigid", correct: "Strict", wrong: ["Flexible", "Soft", "Bendy"] },
+        { word: "Subtle", correct: "Delicate", wrong: ["Loud", "Obvious", "Harsh"] },
+        { word: "Surpass", correct: "Exceed", wrong: ["Fail", "Drop", "Fall behind"] },
+        { word: "Tangible", correct: "Concrete", wrong: ["Virtual", "Abstract", "Ghostly"] },
+        { word: "Versatile", correct: "Adaptable", wrong: ["Fixed", "Limited", "Rigid"] },
+        { word: "Vulnerable", correct: "Defenseless", wrong: ["Protected", "Safe", "Secure"] },
+        { word: "Wary", correct: "Cautious", wrong: ["Careless", "Rash", "Trusting"] },
+        { word: "Advocate", correct: "Support", wrong: ["Attack", "Oppose", "Deny"] },
+        { word: "Foster", correct: "Encourage", wrong: ["Stop", "Block", "Suppress"] },
+        { word: "Mitigate", correct: "Reduce", wrong: ["Increase", "Hurt", "Intensify"] }
       ],
       C1: [
-        { word: "Adversity", correct: "Hardship", wrong: ["Luck", "Success", "Prosperity"], icon: "⛈️" },
-        { word: "Affluent", correct: "Wealthy", wrong: ["Poor", "Needy", "Destitute"], icon: "💳" },
-        { word: "Candor", correct: "Honesty", wrong: ["Lies", "Deceit", "Dishonesty"], icon: "🤍" },
-        { word: "Cognizant", correct: "Aware", wrong: ["Blind", "Ignorant", "Unaware"], icon: "👁️" },
-        { word: "Empathy", correct: "Compassion", wrong: ["Hatred", "Apathy", "Dislike"], icon: "❤️" },
-        { word: "Ephemeral", correct: "Temporary", wrong: ["Eternal", "Permanent", "Long"], icon: "⏳" },
-        { word: "Fastidious", correct: "Meticulous", wrong: ["Careless", "Easy", "Sloppy"], icon: "🔍" },
-        { word: "Impeccable", correct: "Flawless", wrong: ["Faulty", "Defective", "Poor"], icon: "⭐" },
-        { word: "Meticulous", correct: "Careful", wrong: ["Quick", "Sloppy", "Careless"], icon: "🔬" },
-        { word: "Pragmatic", correct: "Realistic", wrong: ["Wild", "Idealistic", "Fanciful"], icon: "🧠" },
-        { word: "Robust", correct: "Strong", wrong: ["Fragile", "Weak", "Flimsy"], icon: "🏋️" },
-        { word: "Tenacious", correct: "Persistent", wrong: ["Weak", "Yielding", "Soft"], icon: "🧗" },
-        { word: "Ubiquitous", correct: "Widespread", wrong: ["Rare", "Unique", "Scarce"], icon: "🌐" },
-        { word: "Anomalous", correct: "Irregular", wrong: ["Normal", "Usual", "Standard"], icon: "❓" },
-        { word: "Brevity", correct: "Conciseness", wrong: ["Length", "Verbosity", "Duration"], icon: "✂️" },
-        { word: "Capricious", correct: "Unpredictable", wrong: ["Constant", "Stable", "Predictable"], icon: "🎲" },
-        { word: "Enigma", correct: "Mystery", wrong: ["Truth", "Fact", "Clarity"], icon: "🔮" },
-        { word: "Lethargic", correct: "Sluggish", wrong: ["Energetic", "Active", "Lively"], icon: "🦥" },
-        { word: "Nonchalant", correct: "Calm", wrong: ["Worried", "Anxious", "Eager"], icon: "😎" },
-        { word: "Utilitarian", correct: "Practical", wrong: ["Useless", "Decorative", "Fancy"], icon: "🔧" }
+        { word: "Adversity", correct: "Hardship", wrong: ["Luck", "Success", "Prosperity"] },
+        { word: "Affluent", correct: "Wealthy", wrong: ["Poor", "Needy", "Destitute"] },
+        { word: "Candor", correct: "Honesty", wrong: ["Lies", "Deceit", "Dishonesty"] },
+        { word: "Cognizant", correct: "Aware", wrong: ["Blind", "Ignorant", "Unaware"] },
+        { word: "Empathy", correct: "Compassion", wrong: ["Hatred", "Apathy", "Dislike"] },
+        { word: "Ephemeral", correct: "Temporary", wrong: ["Eternal", "Permanent", "Long"] },
+        { word: "Fastidious", correct: "Meticulous", wrong: ["Careless", "Easy", "Sloppy"] },
+        { word: "Impeccable", correct: "Flawless", wrong: ["Faulty", "Defective", "Poor"] },
+        { word: "Meticulous", correct: "Careful", wrong: ["Quick", "Sloppy", "Careless"] },
+        { word: "Pragmatic", correct: "Realistic", wrong: ["Wild", "Idealistic", "Fanciful"] },
+        { word: "Robust", correct: "Strong", wrong: ["Fragile", "Weak", "Flimsy"] },
+        { word: "Tenacious", correct: "Persistent", wrong: ["Weak", "Yielding", "Soft"] },
+        { word: "Ubiquitous", correct: "Widespread", wrong: ["Rare", "Unique", "Scarce"] },
+        { word: "Anomalous", correct: "Irregular", wrong: ["Normal", "Usual", "Standard"] },
+        { word: "Brevity", correct: "Conciseness", wrong: ["Length", "Verbosity", "Duration"] },
+        { word: "Capricious", correct: "Unpredictable", wrong: ["Constant", "Stable", "Predictable"] },
+        { word: "Enigma", correct: "Mystery", wrong: ["Truth", "Fact", "Clarity"] },
+        { word: "Lethargic", correct: "Sluggish", wrong: ["Energetic", "Active", "Lively"] },
+        { word: "Nonchalant", correct: "Calm", wrong: ["Worried", "Anxious", "Eager"] },
+        { word: "Utilitarian", correct: "Practical", wrong: ["Useless", "Decorative", "Fancy"] }
       ],
       C2: [
-        { word: "Acumen", correct: "Insight", wrong: ["Slow", "Stupidity", "Ignorance"], icon: "🦅" },
-        { word: "Alacrity", correct: "Eagerness", wrong: ["Slowness", "Apathy", "Reluctance"], icon: "🔥" },
-        { word: "Banal", correct: "Common", wrong: ["Fresh", "Original", "Unique"], icon: "⚪" },
-        { word: "Conundrum", correct: "Puzzle", wrong: ["Answer", "Solution", "Explanation"], icon: "🧩" },
-        { word: "Disparate", correct: "Different", wrong: ["Equal", "Identical", "Same"], icon: "🔀" },
-        { word: "Esoteric", correct: "Specialized", wrong: ["Known", "Public", "Common"], icon: "🔑" },
-        { word: "Inscrutable", correct: "Mysterious", wrong: ["Easy", "Clear", "Transparent"], icon: "🗿" },
-        { word: "Laconic", correct: "Brief", wrong: ["Wordy", "Verbose", "Garrulous"], icon: "💬" },
-        { word: "Obsequious", correct: "Servile", wrong: ["Proud", "Arrogant", "Rebellious"], icon: "🙇" },
-        { word: "Paucity", correct: "Scarcity", wrong: ["Plenty", "Surplus", "Abundance"], icon: "🏜️" },
-        { word: "Perfunctory", correct: "Careless", wrong: ["Detailed", "Thorough", "Careful"], icon: "💨" },
-        { word: "Recalcitrant", correct: "Rebellious", wrong: ["Passive", "Obedient", "Compliant"], icon: "🐂" },
-        { word: "Salubrious", correct: "Healthy", wrong: ["Toxic", "Unhealthy", "Harmful"], icon: "🥗" },
-        { word: "Taciturn", correct: "Quiet", wrong: ["Loud", "Talkative", "Garrulous"], icon: "🤐" },
-        { word: "Tenuous", correct: "Weak", wrong: ["Firm", "Solid", "Strong"], icon: "🧵" },
-        { word: "Volatile", correct: "Unstable", wrong: ["Fixed", "Calm", "Steady"], icon: "🌋" },
-        { word: "Expedite", correct: "Speed up", wrong: ["Slow", "Delay", "Hinder"], icon: "⏩" },
-        { word: "Pellucid", correct: "Clear", wrong: ["Dark", "Opaque", "Muddy"], icon: "💎" },
-        { word: "Spurious", correct: "Fake", wrong: ["True", "Genuine", "Authentic"], icon: "🎭" },
-        { word: "Zeal", correct: "Passion", wrong: ["Coldness", "Apathy", "Indifference"], icon: "❤️‍🔥" }
+        { word: "Acumen", correct: "Insight", wrong: ["Slow", "Stupidity", "Ignorance"] },
+        { word: "Alacrity", correct: "Eagerness", wrong: ["Slowness", "Apathy", "Reluctance"] },
+        { word: "Banal", correct: "Common", wrong: ["Fresh", "Original", "Unique"] },
+        { word: "Conundrum", correct: "Puzzle", wrong: ["Answer", "Solution", "Explanation"] },
+        { word: "Disparate", correct: "Different", wrong: ["Equal", "Identical", "Same"] },
+        { word: "Esoteric", correct: "Specialized", wrong: ["Known", "Public", "Common"] },
+        { word: "Inscrutable", correct: "Mysterious", wrong: ["Easy", "Clear", "Transparent"] },
+        { word: "Laconic", correct: "Brief", wrong: ["Wordy", "Verbose", "Garrulous"] },
+        { word: "Obsequious", correct: "Servile", wrong: ["Proud", "Arrogant", "Rebellious"] },
+        { word: "Paucity", correct: "Scarcity", wrong: ["Plenty", "Surplus", "Abundance"] },
+        { word: "Perfunctory", correct: "Careless", wrong: ["Detailed", "Thorough", "Careful"] },
+        { word: "Recalcitrant", correct: "Rebellious", wrong: ["Passive", "Obedient", "Compliant"] },
+        { word: "Salubrious", correct: "Healthy", wrong: ["Toxic", "Unhealthy", "Harmful"] },
+        { word: "Taciturn", correct: "Quiet", wrong: ["Loud", "Talkative", "Garrulous"] },
+        { word: "Tenuous", correct: "Weak", wrong: ["Firm", "Solid", "Strong"] },
+        { word: "Volatile", correct: "Unstable", wrong: ["Fixed", "Calm", "Steady"] },
+        { word: "Expedite", correct: "Speed up", wrong: ["Slow", "Delay", "Hinder"] },
+        { word: "Pellucid", correct: "Clear", wrong: ["Dark", "Opaque", "Muddy"] },
+        { word: "Spurious", correct: "Fake", wrong: ["True", "Genuine", "Authentic"] },
+        { word: "Zeal", correct: "Passion", wrong: ["Coldness", "Apathy", "Indifference"] }
       ]
     };
+
+    // Local Storage Note Manager
+    function getSavedNote(wordKey) {
+      return localStorage.getItem('twin_words_note_' + wordKey) || '';
+    }
+
+    function saveNote(wordKey, noteValue) {
+      localStorage.setItem('twin_words_note_' + wordKey, noteValue);
+    }
 
     // Firebase Auth Listener
     onAuthStateChanged(auth, async (user) => {
@@ -570,7 +582,7 @@
       };
     });
 
-    // --- VISUAL SYNONYM DICTIONARY (IKONLU DÜZEN) ---
+    // --- INTERACTIVE PERSONAL DICTIONARY ---
     function renderDictionary() {
       const container = document.getElementById('dictionary-list');
       const searchVal = document.getElementById('dict-search').value.toLowerCase().trim();
@@ -579,17 +591,19 @@
       let allWords = [];
       Object.keys(wordDatabase).forEach(lvl => {
         wordDatabase[lvl].forEach(item => {
-          allWords.push({ ...item, level: lvl });
+          const userNote = getSavedNote(item.word);
+          allWords.push({ ...item, level: lvl, userNote: userNote });
         });
       });
 
       const filtered = allWords.filter(i => 
         i.word.toLowerCase().includes(searchVal) || 
-        i.correct.toLowerCase().includes(searchVal)
+        i.correct.toLowerCase().includes(searchVal) ||
+        i.userNote.toLowerCase().includes(searchVal)
       );
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div style="color:#64748b; font-size:14px; text-align:center; padding: 20px;">No matching words found.</div>`;
+        container.innerHTML = `<div style="color:#64748b; font-size:14px; text-align:center; padding: 20px;">No matching words or notes found.</div>`;
         return;
       }
 
@@ -602,9 +616,8 @@
             <span class="badge">${item.level}</span>
           </div>
           <div class="dict-center">
-            <div class="dict-icon-box" title="Visual Representation">
-              <span>${item.icon || '✨'}</span>
-            </div>
+            <input type="text" class="dict-note-input" id="note-input-${item.word}" value="${item.userNote}" placeholder="Kendi anlamını / notunu yaz...">
+            <button class="dict-save-btn" onclick="saveWordNote('${item.word}')">💾 Kaydet</button>
           </div>
           <div class="dict-right">
             <span class="dict-label">Synonym:</span>
@@ -616,6 +629,15 @@
     }
 
     window.filterDictionary = renderDictionary;
+
+    window.saveWordNote = function(wordKey) {
+      const inputEl = document.getElementById(`note-input-${wordKey}`);
+      if (inputEl) {
+        const val = inputEl.value.trim();
+        saveNote(wordKey, val);
+        alert(`"${wordKey}" kelimesi için notun kaydedildi! ✅`);
+      }
+    };
 
     // Game Logic
     function restartGame() {
