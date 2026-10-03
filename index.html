@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Twin Words</title>
+  <title>Twin Words - Firebase Powered</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #0b0f19; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
@@ -46,7 +46,6 @@
     .stat-box { font-weight: bold; font-size: 15px; }
     .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px; }
     
-    /* Difficulty Level Selector */
     .level-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 10px; }
     .level-btn { background: #0f172a; border: 1px solid #1e293b; color: #94a3b8; padding: 8px 0; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .level-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
@@ -59,32 +58,23 @@
     .option-btn:hover:not(:disabled) { background: #334155; border-color: #3b82f6; }
     .option-btn:disabled { opacity: 0.2; cursor: not-allowed; border-color: #1e293b; }
     
-    /* Jokers Container */
     .jokers-container { display: flex; justify-content: center; gap: 10px; margin-bottom: 5px; }
     .joker-btn { background: #1e1b4b; border: 1px solid #4338ca; color: #a5b4fc; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .joker-btn:hover:not(:disabled) { background: #312e81; color: white; }
     .joker-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #1e293b; color: #64748b; }
 
-    /* Doğru/Yanlış Efekt Renkleri */
     .option-btn.correct-highlight { background: #064e3b !important; border-color: #10b981 !important; color: #34d399 !important; font-weight: bold; }
     .option-btn.wrong-highlight { background: #7f1d1d !important; border-color: #ef4444 !important; color: #f87171 !important; }
 
     .message { font-size: 13px; text-align: center; padding: 8px; border-radius: 6px; display: none; width: 100%; }
     .message.error { background: #451a1a; color: #f87171; display: block; }
     .message.success { background: #064e3b; color: #34d399; display: block; }
-    .message.info { background: #1e1b4b; color: #a5b4fc; display: block; }
-    
+
     .btn-logout { background: #7f1d1d; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
     .btn-restart { background: #2563eb; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; width: 100%; }
 
     .review-banner { background: #312e81; color: #c7d2fe; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; border: 1px solid #4338ca; }
-    .combo-banner { color: #f59e0b; font-weight: 800; font-size: 18px; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); animation: pulse 0.5s ease-in-out; }
-
-    @keyframes pulse {
-      0% { transform: scale(0.95); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
+    .combo-banner { color: #f59e0b; font-weight: 800; font-size: 18px; text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
 
     .hidden { display: none !important; }
   </style>
@@ -96,33 +86,34 @@
   <!-- AUTH SECTION -->
   <div id="auth-section" class="main-container">
     <div class="leaderboard-card">
-      <div class="leaderboard-title">🏆 Top Scores</div>
+      <div class="leaderboard-title">🏆 Top Scores (Firebase Live)</div>
       <div id="leaderboard-list" class="score-list"></div>
     </div>
 
     <div class="auth-card">
       <div id="tab-container" class="tabs">
-        <button id="btn-login-tab" class="tab-btn active" onclick="switchTab('login')">Log In</button>
-        <button id="btn-reg-tab" class="tab-btn" onclick="switchTab('register')">Sign Up</button>
+        <button id="btn-login-tab" class="tab-btn active">Log In</button>
+        <button id="btn-reg-tab" class="tab-btn">Sign Up</button>
       </div>
 
       <div id="login-form" class="form-box">
-        <input type="text" id="login-username" class="input-field" placeholder="Username">
+        <input type="email" id="login-email" class="input-field" placeholder="Email">
         <input type="password" id="login-password" class="input-field" placeholder="Password">
-        <button class="btn-submit" onclick="login()">Start Game</button>
+        <button class="btn-submit" id="btn-login">Start Game</button>
       </div>
 
       <div id="register-form" class="form-box hidden">
         <div class="avatar-title">Choose Avatar</div>
         <div class="avatar-list">
-          <span class="avatar-item selected" onclick="selectAvatar(this, '🦊')">🦊</span>
-          <span class="avatar-item" onclick="selectAvatar(this, '🐱')">🐱</span>
-          <span class="avatar-item" onclick="selectAvatar(this, '🐼')">🐼</span>
-          <span class="avatar-item" onclick="selectAvatar(this, '🦁')">🦁</span>
+          <span class="avatar-item selected" data-avatar="🦊">🦊</span>
+          <span class="avatar-item" data-avatar="🐱">🐱</span>
+          <span class="avatar-item" data-avatar="🐼">🐼</span>
+          <span class="avatar-item" data-avatar="🦁">🦁</span>
         </div>
         <input type="text" id="reg-username" class="input-field" placeholder="Username">
+        <input type="email" id="reg-email" class="input-field" placeholder="Email">
         <input type="password" id="reg-password" class="input-field" placeholder="Password">
-        <button class="btn-submit" onclick="register()">Create Account</button>
+        <button class="btn-submit" id="btn-register">Create Account</button>
       </div>
       <div id="msg" class="message"></div>
     </div>
@@ -135,42 +126,38 @@
         <span id="user-avatar">🦊</span>
         <span id="user-name">Player</span>
       </div>
-      <button class="btn-logout" onclick="logout()">Log Out</button>
+      <button class="btn-logout" id="btn-logout">Log Out</button>
     </div>
 
-    <!-- Level Selection -->
     <div>
       <div class="avatar-title">Select Level</div>
       <div class="level-grid">
-        <button class="level-btn active" onclick="setLevel('A1', this)">A1</button>
-        <button class="level-btn" onclick="setLevel('A2', this)">A2</button>
-        <button class="level-btn" onclick="setLevel('B1', this)">B1</button>
-        <button class="level-btn" onclick="setLevel('B2', this)">B2</button>
-        <button class="level-btn" onclick="setLevel('C1', this)">C1</button>
-        <button class="level-btn" onclick="setLevel('C2', this)">C2</button>
+        <button class="level-btn active" data-level="A1">A1</button>
+        <button class="level-btn" data-level="A2">A2</button>
+        <button class="level-btn" data-level="B1">B1</button>
+        <button class="level-btn" data-level="B2">B2</button>
+        <button class="level-btn" data-level="C1">C1</button>
+        <button class="level-btn" data-level="C2">C2</button>
       </div>
     </div>
 
-    <!-- Stats -->
     <div class="stats-bar">
-      <div class="stat-box"><span class="stat-label">Lives</span><span id="lives-display">❤️❤️❤️</span></div>
+      <div class="stat-box"><span class="stat-label">Lives</span><span id="lives-display">❤️❤️❤</span></div>
       <div class="stat-box"><span class="stat-label">Time</span><span id="timer-display" style="color: #f59e0b;">60s</span></div>
       <div class="stat-box"><span class="stat-label">Score</span><span id="current-score" style="color: #38bdf8;">0</span></div>
     </div>
 
-    <!-- Jokers Bar -->
     <div class="jokers-container">
-      <button id="joker-5050" class="joker-btn" onclick="useFiftyFifty()">🎭 50/50 Joker</button>
-      <button id="joker-time" class="joker-btn" onclick="useExtraTime()">⏳ +10s Time</button>
+      <button id="joker-5050" class="joker-btn">🎭 50/50 Joker</button>
+      <button id="joker-time" class="joker-btn">⏳ +10s Time</button>
     </div>
 
-    <!-- Bildirim Bandları -->
     <div id="review-banner" class="review-banner hidden">
       💡 REDEMPTION ROUND: Answer words you got wrong for +5 Pts each!
     </div>
 
     <div id="combo-banner" class="combo-banner hidden">
-      🔥 3 COMBO! (1.5x Puan)
+      🔥 3 COMBO!
     </div>
 
     <div id="game-play-area">
@@ -185,13 +172,50 @@
     <div id="game-over-area" class="hidden">
       <h2 style="color: #f87171; margin-bottom: 10px;">Game Over! 🎮</h2>
       <p style="margin-bottom: 15px;">Total Score: <strong id="final-score" style="color: #38bdf8;">0</strong></p>
-      <button class="btn-restart" onclick="restartGame()">Play Again</button>
+      <button class="btn-restart" id="btn-restart">Play Again</button>
     </div>
 
     <div id="game-msg" class="message"></div>
   </div>
 
-  <script>
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      doc, 
+      setDoc, 
+      getDoc, 
+      collection, 
+      query, 
+      orderBy, 
+      limit, 
+      onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Firebase Bilgilerin
+    const firebaseConfig = {
+      apiKey: "AIzaSyBUNGKkVKIGxTaQ69pvVgIFJAWJbUVtutk",
+      authDomain: "twin-words-a9228.firebaseapp.com",
+      projectId: "twin-words-a9228",
+      storageBucket: "twin-words-a9228.firebasestorage.app",
+      messagingSenderId: "748112325454",
+      appId: "1:748112325454:web:f50a8d422f61936397cc1f",
+      measurementId: "G-H0TGXEMGZ5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUserDoc = null;
     let selectedAvatar = '🦊';
     let currentLevel = 'A1';
     let currentScore = 0;
@@ -200,13 +224,10 @@
     let timerInterval = null;
     let currentQuestion = null;
     let canAnswer = true;
-    
     let playedWords = [];
     let wrongWordsHistory = [];
     let isReviewMode = false;
     let comboCount = 0;
-
-    // Joker Durumları
     let fiftyFiftyUsed = false;
     let extraTimeUsed = false;
 
@@ -345,42 +366,54 @@
       ]
     };
 
-    window.onload = function() {
-      updateLeaderboard();
-      const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-      if (activeUser) loginUser(activeUser);
-    };
+    // Firebase Auth Listener
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          currentUserDoc = { uid: user.uid, ...docSnap.data() };
+          document.getElementById('user-avatar').innerText = currentUserDoc.avatar || '🦊';
+          document.getElementById('user-name').innerText = currentUserDoc.username || 'Player';
+          document.getElementById('auth-section').classList.add('hidden');
+          document.getElementById('game-section').classList.remove('hidden');
+          restartGame();
+        }
+      } else {
+        currentUserDoc = null;
+        document.getElementById('game-section').classList.add('hidden');
+        document.getElementById('auth-section').classList.remove('hidden');
+      }
+    });
 
-    function updateLeaderboard() {
-      const users = JSON.parse(localStorage.getItem('users')) || [];
+    // Realtime Leaderboard Listener
+    const q = query(collection(db, "users"), orderBy("highScore", "desc"), limit(5));
+    onSnapshot(q, (snapshot) => {
       const board = document.getElementById('leaderboard-list');
-      
-      users.sort((a, b) => (b.score || 0) - (a.score || 0));
-
-      if(users.length === 0) {
+      if (snapshot.empty) {
         board.innerHTML = `<div style="color:#64748b; font-size:13px; text-align:center;">No scores yet!</div>`;
         return;
       }
-
-      board.innerHTML = users.slice(0, 5).map((u, i) => `
-        <div class="score-item">
-          <div class="player-info">
-            <span>#${i + 1}</span>
-            <span>${u.avatar || '🦊'} ${u.username}</span>
+      board.innerHTML = snapshot.docs.map((doc, i) => {
+        const u = doc.data();
+        return `
+          <div class="score-item">
+            <div class="player-info">
+              <span>#${i + 1}</span>
+              <span>${u.avatar || '🦊'} ${u.username}</span>
+            </div>
+            <div>
+              <span class="badge">${u.lastLevel || 'A1'}</span>
+              <span class="points">${u.highScore || 0} Pts</span>
+            </div>
           </div>
-          <div>
-            <span class="badge">${u.lastLevel || 'A1'}</span>
-            <span class="points">${u.score || 0} Pts</span>
-          </div>
-        </div>
-      `).join('');
-    }
+        `;
+      }).join('');
+    });
 
-    function selectAvatar(el, avatar) {
-      document.querySelectorAll('.avatar-item').forEach(i => i.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedAvatar = avatar;
-    }
+    // Event Handlers
+    document.getElementById('btn-login-tab').onclick = () => switchTab('login');
+    document.getElementById('btn-reg-tab').onclick = () => switchTab('register');
 
     function switchTab(target) {
       if(target === 'login') {
@@ -396,50 +429,68 @@
       }
     }
 
-    function register() {
+    document.querySelectorAll('.avatar-item').forEach(item => {
+      item.onclick = (e) => {
+        document.querySelectorAll('.avatar-item').forEach(i => i.classList.remove('selected'));
+        e.target.classList.add('selected');
+        selectedAvatar = e.target.getAttribute('data-avatar');
+      };
+    });
+
+    // Register
+    document.getElementById('btn-register').onclick = async () => {
       const u = document.getElementById('reg-username').value.trim();
-      const p = document.getElementById('reg-password').value.trim();
-      if(!u || !p) return showMessage("Please fill in all fields!", "error");
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value.trim();
 
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      if(users.some(x => x.username === u)) return showMessage("Username already taken!", "error");
+      if (!u || !email || !password) return showMessage("Please fill in all fields!", "error");
 
-      users.push({ username: u, password: p, avatar: selectedAvatar, score: 0, lastLevel: 'A1' });
-      localStorage.setItem('users', JSON.stringify(users));
-      updateLeaderboard();
-      showMessage("Account created! Please log in.", "success");
-      setTimeout(() => switchTab('login'), 1000);
-    }
-
-    function login() {
-      const u = document.getElementById('login-username').value.trim();
-      const p = document.getElementById('login-password').value.trim();
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      const user = users.find(x => x.username === u && x.password === p);
-
-      if(user) {
-        localStorage.setItem('activeUser', JSON.stringify(user));
-        loginUser(user);
-      } else {
-        showMessage("Invalid username or password!", "error");
+      try {
+        const res = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", res.user.uid), {
+          username: u,
+          email: email,
+          avatar: selectedAvatar,
+          highScore: 0,
+          lastLevel: 'A1'
+        });
+        showMessage("Account created successfully!", "success");
+      } catch (err) {
+        showMessage(err.message, "error");
       }
-    }
+    };
 
-    function loginUser(user) {
-      document.getElementById('auth-section').classList.add('hidden');
-      document.getElementById('game-section').classList.remove('hidden');
-      document.getElementById('user-avatar').innerText = user.avatar || '🦊';
-      document.getElementById('user-name').innerText = user.username;
-      restartGame();
-    }
+    // Login
+    document.getElementById('btn-login').onclick = async () => {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value.trim();
 
-    function setLevel(lvl, el) {
-      document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
-      currentLevel = lvl;
-      restartGame();
-    }
+      if (!email || !password) return showMessage("Please fill in all fields!", "error");
 
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        showMessage("Invalid credentials!", "error");
+      }
+    };
+
+    // Logout
+    document.getElementById('btn-logout').onclick = () => {
+      clearInterval(timerInterval);
+      signOut(auth);
+    };
+
+    // Level Selection
+    document.querySelectorAll('.level-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        currentLevel = e.target.getAttribute('data-level');
+        restartGame();
+      };
+    });
+
+    // Game Logic
     function restartGame() {
       clearInterval(timerInterval);
       currentScore = 0;
@@ -450,13 +501,11 @@
       wrongWordsHistory = [];
       isReviewMode = false;
       comboCount = 0;
-      
-      // Jokerleri Sıfırla
       fiftyFiftyUsed = false;
       extraTimeUsed = false;
+
       document.getElementById('joker-5050').disabled = false;
       document.getElementById('joker-time').disabled = false;
-      
       document.getElementById('review-banner').classList.add('hidden');
       document.getElementById('combo-banner').classList.add('hidden');
       document.getElementById('game-play-area').classList.remove('hidden');
@@ -465,10 +514,12 @@
       document.getElementById('lives-display').innerText = "❤️".repeat(lives);
       document.getElementById('timer-display').innerText = timeLeft + "s";
       document.getElementById('game-msg').className = "message";
-      
+
       startTimer();
       nextQuestion();
     }
+
+    document.getElementById('btn-restart').onclick = restartGame;
 
     function startTimer() {
       timerInterval = setInterval(() => {
@@ -528,14 +579,7 @@
 
       if(selected === currentQuestion.correct) {
         comboCount++;
-
-        let multiplier = 1;
-        if (comboCount >= 5) {
-          multiplier = 2;
-        } else if (comboCount >= 3) {
-          multiplier = 1.5;
-        }
-
+        let multiplier = comboCount >= 5 ? 2 : (comboCount >= 3 ? 1.5 : 1);
         const basePoints = isReviewMode ? 5 : 10;
         const pointsAwarded = Math.round(basePoints * multiplier);
 
@@ -557,25 +601,19 @@
       } else {
         comboCount = 0;
         document.getElementById('combo-banner').classList.add('hidden');
-
         targetBtn.classList.add('wrong-highlight');
         allButtons.forEach(btn => {
-          if(btn.innerText === currentQuestion.correct) {
-            btn.classList.add('correct-highlight');
-          }
+          if(btn.innerText === currentQuestion.correct) btn.classList.add('correct-highlight');
         });
 
         if(!isReviewMode) {
           lives--;
           document.getElementById('lives-display').innerText = "❤️".repeat(Math.max(0, lives));
-          
-          if(!wrongWordsHistory.some(w => w.word === currentQuestion.word)) {
-            wrongWordsHistory.push(currentQuestion);
-          }
+          if(!wrongWordsHistory.some(w => w.word === currentQuestion.word)) wrongWordsHistory.push(currentQuestion);
 
           msg.innerText = `Wrong! Correct answer was "${currentQuestion.correct}" ❌`;
           msg.className = "message error";
-          
+
           if(lives <= 0) {
             clearInterval(timerInterval);
             setTimeout(startReviewMode, 1200);
@@ -590,39 +628,34 @@
       }
     }
 
-    /* JOKER FONKSİYONLARI */
-    function useFiftyFifty() {
+    // Jokers
+    document.getElementById('joker-5050').onclick = () => {
       if(fiftyFiftyUsed || !canAnswer) return;
       fiftyFiftyUsed = true;
       document.getElementById('joker-5050').disabled = true;
 
       const buttons = Array.from(document.querySelectorAll('.option-btn'));
-      // Yanlış cevaplı butonları bul
       const wrongButtons = buttons.filter(btn => btn.innerText !== currentQuestion.correct);
-
-      // Rastgele 2 tanesini seçip devre dışı bırak
       wrongButtons.sort(() => Math.random() - 0.5);
       wrongButtons.slice(0, 2).forEach(btn => {
         btn.disabled = true;
         btn.innerText = "❌";
       });
-    }
+    };
 
-    function useExtraTime() {
+    document.getElementById('joker-time').onclick = () => {
       if(extraTimeUsed || isReviewMode) return;
       extraTimeUsed = true;
       document.getElementById('joker-time').disabled = true;
-
       timeLeft += 10;
       document.getElementById('timer-display').innerText = timeLeft + "s";
-    }
+    };
 
     function startReviewMode() {
       if(wrongWordsHistory.length === 0) {
         finishGame();
         return;
       }
-      
       isReviewMode = true;
       document.getElementById('joker-5050').disabled = true;
       document.getElementById('joker-time').disabled = true;
@@ -632,7 +665,7 @@
       nextQuestion();
     }
 
-    function finishGame() {
+    async function finishGame() {
       clearInterval(timerInterval);
       document.getElementById('review-banner').classList.add('hidden');
       document.getElementById('combo-banner').classList.add('hidden');
@@ -641,36 +674,14 @@
       document.getElementById('final-score').innerText = currentScore;
       document.getElementById('game-msg').className = "message";
 
-      saveUserScore();
-    }
-
-    function saveUserScore() {
-      const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-      if(!activeUser) return;
-
-      const users = JSON.parse(localStorage.getItem('users')) || [];
-      const userIndex = users.findIndex(u => u.username === activeUser.username);
-
-      if(userIndex !== -1) {
-        if(currentScore > (users[userIndex].score || 0)) {
-          users[userIndex].score = currentScore;
-          users[userIndex].lastLevel = currentLevel;
-          activeUser.score = currentScore;
-          activeUser.lastLevel = currentLevel;
-          
-          localStorage.setItem('users', JSON.stringify(users));
-          localStorage.setItem('activeUser', JSON.stringify(activeUser));
-        }
+      if (currentUserDoc && currentScore > (currentUserDoc.highScore || 0)) {
+        const userRef = doc(db, "users", currentUserDoc.uid);
+        await setDoc(userRef, {
+          highScore: currentScore,
+          lastLevel: currentLevel
+        }, { merge: true });
+        currentUserDoc.highScore = currentScore;
       }
-      updateLeaderboard();
-    }
-
-    function logout() {
-      clearInterval(timerInterval);
-      localStorage.removeItem('activeUser');
-      document.getElementById('game-section').classList.add('hidden');
-      document.getElementById('auth-section').classList.remove('hidden');
-      updateLeaderboard();
     }
 
     function showMessage(m, type) {
